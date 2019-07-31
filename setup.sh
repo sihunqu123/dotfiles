@@ -105,7 +105,6 @@ function setup {
     '.gitconfig' '.screenrc' '.bashrc' '.npmrc' '.vimrc' '.bash_profile'
     '.zshrc' '.vim/plugin/highlights.csv' '.vim/plugin/highlights.vim'
     '.vim/colors/molokai.vim' '.vim/colors/SolarizedDark.vim' '.vim/tiantccs.vim'
-    '.vim/bundle/nerdtree/nerdtree_plugin/myMapping.vim'
     'script'
   )
 
@@ -121,12 +120,25 @@ function setup {
 # call setup
 setup
 exitStatus=$?
+exitIfError exitStatus
 
-if ((exitStatus==0)); then
- echo "setup successfully!"
-else
- echo "setup failed!"
-fi
+vim +PluginInstall +qall
+
+# Should be executed after `PluginInstall`, otherwise nerdtree won't be installed.
+linkFrmDot '.vim/bundle/nerdtree/nerdtree_plugin/myMapping.vim'
+
+
+exitStatus=$?
+exitIfError exitStatus
+
+function exitIfError {
+  if (($1==0)); then
+    echo "setup successfully!"
+  else
+    echo "setup failed!"
+    exit 1
+  fi
+}
 
 # echo "Setup vim-sensible plugin start..."
 # cd ~/.vim/bundle && \

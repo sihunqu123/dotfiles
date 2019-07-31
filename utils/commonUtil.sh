@@ -7,3 +7,13 @@ function isMacOS {
 }
 
 
+function exitIfError {
+  if (($1==0)); then
+    echo "no error found yet"
+  else
+    echo "Error found! Exit..."
+    exit 1
+  fi
+}
+
+
