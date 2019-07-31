@@ -61,7 +61,7 @@ function linkFrmDot {
     ret=$(isLink "${fileInHome}")
     if [[ "${ret}" == "true" ]]; then
       echo "but is a link, thus will remove it."
-      rm -fv mv -fv ${fileInHome}
+      rm -fv ${fileInHome}
     else
       echo "and is not a link, thus, will move it to ${bakDir}"
       # use cp for test
