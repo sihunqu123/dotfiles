@@ -8,6 +8,27 @@ home=`cd ~ && pwd`
 bakDir="${home}/bakDir"
 dotDir="${home}/.dotfiles"
 
+GREP_CLI='grep'
+
+source ./utils/commonUtil.sh
+
+isMacOS_b=$(isMacOS)
+# set grep command line tool
+if [[ "${isMacOS_b}" == "true" ]]; then
+  # for macos, use ggrep instead
+  which ggrep > /dev/null
+  exitStatus=$?
+  if ((exitStatus==0)); then
+    # echo "use ggrep instead."
+    GREP_CLI='ggrep'
+  else
+    # echo "Setup failed! ggrep is needed! Please install gnu grep."
+    exit 1
+  fi
+else
+  # for centos7 and Windows, nothing to do
+  echo "grep is OK"
+fi
 
 echo "bakDir: ${bakDir}"
 $(mkdir ${bakDir})
@@ -20,13 +41,15 @@ fi
 
 # return -1 if not found
 function lastIndexOf() {
-  echo "$1" | grep -b -o "$2" | awk 'BEGIN {FS=":";RET=-1}{RET=$1} END {print RET}'
+  echo "$1" | ${GREP_CLI} -b -o "$2" | awk 'BEGIN {FS=":";RET=-1}{RET=$1} END {print RET}'
 }
+# ret=$(lastIndexOf "a/bcb/de" "/")
+# echo "last index: ${ret}" # output: 5
 
 # return "true" if it's a link
 function isLink {
   ret=$(ls -l "$1" |egrep "^l")
-  echo "ret:${ret}"
+#  echo "ret:${ret}"
   [[ ! -z "${ret}" ]] && echo "true" || echo "false"
 }
 
@@ -38,6 +61,7 @@ function linkFrmDot {
     ret=$(isLink "${fileInHome}")
     if [[ "${ret}" == "true" ]]; then
       echo "but is a link, thus will remove it."
+      rm -fv ${fileInHome}
     else
       echo "and is not a link, thus, will move it to ${bakDir}"
       # use cp for test
@@ -69,7 +93,12 @@ function linkFrmDot {
 }
 
 function setup {
-  item2link=('.gitconfig' '.screenrc' '.bashrc' '.npmrc' '.vimrc' '.bash_profile' '.zshrc', '.vim/plugin/highlights.csv' '.vim/plugin/highlights.vim', '.vim/bundle/nerdtree/nerdtree_plugin/myMapping.vim')
+  item2link=(
+    '.gitconfig' '.screenrc' '.bashrc' '.npmrc' '.vimrc' '.bash_profile'
+    '.zshrc' '.vim/plugin/highlights.csv'
+    '.vim/plugin/highlights.vim' '.vim/bundle/nerdtree/nerdtree_plugin/myMapping.vim'
+    'script'
+  )
 
   length=${#item2link[@]}
 
@@ -89,9 +118,6 @@ if ((exitStatus==0)); then
 else
  echo "setup failed!"
 fi
-
-# RET=$(lastIndexOf "a/bcb/de" "/")
-# echo "last index: ${ret}" # output: 5
 
 # echo "Setup vim-sensible plugin start..."
 # cd ~/.vim/bundle && \
