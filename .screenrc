@@ -114,8 +114,8 @@ pow_detach_msg "Screen session of $LOGNAME $:cr:$:nl:ended."
 # set every new windows hardstatus line to somenthing descriptive
 # defhstatus "screen: ^En (^Et)"
 
-defscrollback 1000
-
+defscrollback 9000
+defobuflimit 9000
 # don't kill window after the process died
 # zombie "^["
 
@@ -258,4 +258,11 @@ bindkey "^A^[[A" focus up
 #bindkey "^A^[[B" focus down
 bindkey "^A^[[B" focus down
 
-hardstatus alwayslastline "%c %w"
+# hardstatus alwayslastline "%c %w"
+
+
+hardstatus alwaysignore
+
+caption always
+caption string "%{kg}%-w%{wb}|%n %t|%{-}%+w"
+hardstatus alwayslastline "You are on: %H  | Now is:  %C%a  %d %M %Y |"

@@ -99,7 +99,7 @@ function! s:DoHighlight(hlnum, pat, decade)
 endfunction
 
 " Remove all matches for pattern. By
-" move cursor on the word 
+" move cursor on the word
 " or select text
 " then Press hotkey
 function! s:UndoHighlight(pat)
@@ -157,7 +157,7 @@ function! s:MatchToggle()
     " this works
     " nnoremap <silent> <Leader>3 :<C-U>call <SID>DoHighlight(3, 2, v:count)<CR>
     " nmap <silent> <Leader>2 <Plug>(CommandT)
-    
+
     vnoremap <silent> -0 :<C-U>call <SID>UndoHighlight(1)<CR>
     nnoremap <silent> -0 :<C-U>call <SID>UndoHighlight(2)<CR>
     nnoremap <silent> -- :call <SID>WindowMatches(0)<CR>

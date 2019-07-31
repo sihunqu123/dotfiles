@@ -1,8 +1,9 @@
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
+home=`cd ~ && pwd`
 # Path to your oh-my-zsh installation.
-  export ZSH="/home/tiantc/.oh-my-zsh"
+export ZSH="${home}/.oh-my-zsh"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -102,7 +103,7 @@ source $ZSH/oh-my-zsh.sh
 # export TERM=xterm-256color
 
 # source .config/git_ssh.sh
-source ~/.dotfiles/shell.sh
+source ~/.dotfiles/.config/shell.sh
 
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh

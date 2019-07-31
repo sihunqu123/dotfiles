@@ -44,4 +44,6 @@
 [http]
 proxy = "http://host.vm:1080"
 # proxy = ""
+[log]
+	date = default
 
