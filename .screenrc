@@ -19,7 +19,7 @@ vbell_msg "   Wuff  ----  Wuff!!  "
 # all termcap entries are now duplicated as terminfo entries.
 # only difference should be the slightly modified syntax, and check for
 # terminfo entries, that are already corected in the database.
-# 
+#
 # G0 	we have a SEMI-GRAPHICS-CHARACTER-MODE
 # WS	this sequence resizes our window.
 # cs    this sequence changes the scrollregion
@@ -66,7 +66,7 @@ terminfo sun 'up=^K:AL=\E[%p1%dL:DL=\E[%p1%dM:UP=\E[%p1%dA:DO=\E[%p1%dB:LE=\E[%p
 #terminfo xterm 'is=\E[r\E[m\E[2J\E[H\E[?7h\E[?1;4;6l'
 
 #
-# Do not use xterms alternate window buffer. 
+# Do not use xterms alternate window buffer.
 # This one would not add lines to the scrollback buffer.
 #termcap xterm|xterms|xs ti=\E7\E[?47l
 #terminfo xterm|xterms|xs ti=\E7\E[?47l
@@ -114,8 +114,8 @@ pow_detach_msg "Screen session of $LOGNAME $:cr:$:nl:ended."
 # set every new windows hardstatus line to somenthing descriptive
 # defhstatus "screen: ^En (^Et)"
 
-defscrollback 9000
-defobuflimit 9000
+defscrollback 1000
+
 # don't kill window after the process died
 # zombie "^["
 
@@ -214,3 +214,48 @@ hardstatus string "[screen %n%?: %t%?] %h"
 # defnonblock 1
 # blankerprg rain -d 100
 # idle 30 blanker
+
+#bind left focus left
+bind h focus left
+# bind j focus down
+# bind k focus up
+bind l focus right
+bind t focus top
+bind b focus bottom
+
+# use space to display terminal info
+# refer:
+#  the '5.2 Command Summary' of
+# https://www.gnu.org/software/screen/manual/screen.html
+#bind ' ' dinfo
+
+bind ' ' layout show
+bind 0 layout select 0
+bind 1 layout select 1
+bind 2 layout select 2
+bind 3 layout select 3
+bind 4 layout select 4
+bind 5 layout select 5
+bind 6 layout select 6
+bind 7 layout select 7
+bind 8 layout select 8
+bind 9 layout select 9
+
+
+# ctrlA then right-arrow-key jumps active cursor one pane to the right:
+#bindkey "^A^[OC" focus right
+bindkey "^A^[[C" focus right
+
+# ctrlA then left-arrow-key jumps active cursor one pane to the left:
+#bindkey "^A^[OD" focus left
+bindkey "^A^[[D" focus left
+
+# ctrlA then up-arrow-key jumps active cursor one pane above current:
+#bindkey "^A^[OA" focus up
+bindkey "^A^[[A" focus up
+
+# ctrlA then up-arrow-key jumps active cursor one pane below current:
+#bindkey "^A^[[B" focus down
+bindkey "^A^[[B" focus down
+
+hardstatus alwayslastline "%c %w"

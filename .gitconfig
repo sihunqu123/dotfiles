@@ -1,8 +1,9 @@
 [core]
-	excludesfile = ~/.config/git/.gitignore
+	excludesfile = ~/.dotfiles/.config/git/.gitignore
 	autocrlf = false
 	filemode = false
-	attributesfile = ~/.gitattributes
+	attributesfile = ~/.dotfiles/.config/git/.gitattributes
+	editor = vim
 [alias]
     lg = !"git lg1"
     lg1 = !"git lg1-specific --all"
@@ -33,5 +34,6 @@
 	proxy = ""
 # rest of those git repo need proxy
 [http]
-proxy = http://host.vm:1080
+proxy = "http://host.vm:1080"
+# proxy = ""
 

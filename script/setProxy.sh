@@ -1,0 +1,9 @@
+MY_PROXY_URL="http://host.vm:1080"
+HTTP_PROXY=$MY_PROXY_URL
+HTTPS_PROXY=$MY_PROXY_URL
+FTP_PROXY=$MY_PROXY_URL
+http_proxy=$MY_PROXY_URL
+https_proxy=$MY_PROXY_URL
+ftp_proxy=$MY_PROXY_URL
+NO_PROXY=localhost,127.0.0.1,10.96.0.0/12,192.168.99.0/24,192.168.39.0/24
+export HTTP_PROXY HTTPS_PROXY FTP_PROXY http_proxy https_proxy ftp_proxy NO_PROXY
