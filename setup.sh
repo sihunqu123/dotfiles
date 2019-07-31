@@ -46,6 +46,14 @@ function lastIndexOf() {
 # ret=$(lastIndexOf "a/bcb/de" "/")
 # echo "last index: ${ret}" # output: 5
 
+if [ ! -e "${home}/.bashrc" ]; then
+  echo "seems vundle is already installed"
+else
+  echo "vundle not installed yet, will install it first"
+  git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+fi
+
+
 # return "true" if it's a link
 function isLink {
   ret=$(ls -l "$1" |egrep "^l")
@@ -95,8 +103,9 @@ function linkFrmDot {
 function setup {
   item2link=(
     '.gitconfig' '.screenrc' '.bashrc' '.npmrc' '.vimrc' '.bash_profile'
-    '.zshrc' '.vim/plugin/highlights.csv'
-    '.vim/plugin/highlights.vim' '.vim/bundle/nerdtree/nerdtree_plugin/myMapping.vim'
+    '.zshrc' '.vim/plugin/highlights.csv' '.vim/plugin/highlights.vim'
+    '.vim/colors/molokai.vim' '.vim/colors/SolarizedDark.vim' '.vim/tiantccs.vim'
+    '.vim/bundle/nerdtree/nerdtree_plugin/myMapping.vim'
     'script'
   )
 
