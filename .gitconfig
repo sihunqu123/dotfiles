@@ -34,15 +34,22 @@
 [color]
 	ui = true
 # only cwp git doesn't need proxy.
-[http "https://git.cwp.pnp-hcl.com"]
-	proxy = ""
-[http "git://git.cwp.pnp-hcl.com"]
-	proxy = ""
-[http "git@git.cwp.pnp-hcl.com"]
-	proxy = ""
+#[http "https://git.cwp.pnp-hcl.com"]
+#	proxy = ""
+#[http "git://git.cwp.pnp-hcl.com"]
+#	proxy = ""
+#[http "git@git.cwp.pnp-hcl.com"]
+#	proxy = ""
+#[http "git@gitlab.atlashcl.com"]
+#	proxy = ""
+#[http "git@gitlab.atlashcl.com:2224"]
+#	proxy = ""
+#[http "https://gitlab.atlashcl.com"]
+#	proxy = ""
 # rest of those git repo need proxy
-[http]
-proxy = "http://host.vm:1080"
+#[http]
+#	proxy = "http://host.vm:1080"
+#	sslverify = false
 # proxy = ""
 [log]
 	date = default

@@ -1,4 +1,5 @@
 set nocompatible              " be iMproved, required
+set statusline+=%F
 filetype off                  " required
 
 " set the runtime path to include Vundle and initialize
@@ -45,10 +46,10 @@ Plugin 'maxmellon/vim-jsx-pretty'
 Plugin 'leafgarland/typescript-vim'
 
 " Plugin for buffer explorer
-Plugin 'jlanzarotta/bufexplorer'
+"Plugin 'jlanzarotta/bufexplorer'
 
 " Plugin for mini buffer explorer
-Plugin 'fholgado/minibufexpl.vim'
+"Plugin 'fholgado/minibufexpl.vim'
 
 " base Plugin consumed by xolox/vim-session
 Plugin 'xolox/vim-misc'
@@ -110,6 +111,13 @@ set list lcs=tab:»·
 set laststatus=2
 " set statusline=%t\ %y\ format:\ %{&ff};\ [%c,%l]
 
+" show full filepath
+set statusline+=%F
+
+
+" Open new split panes to right and bottom, which feels more natural than Vim's default
+set splitbelow
+set splitright
 
 " need to check if it's macos then set the colo
 colorscheme molokai
@@ -126,13 +134,87 @@ match ExtraWhitespace /\s\+$/
 nmap <Leader>c :%s/\s\+$//g
 
 " netrw Settings
+"g:netrw_alto    control above/below splitting
+"g:netrw_altv    control right/left splitting
+"g:netrw_preview control horizontal vs vertical splitting
+"g:netrw_winsize control initial sizing
+
 " let g:netrw_keepdir= 0
 " open in tree style
 let g:netrw_liststyle = 3
+
+" g:netrw_browse_split          when browsing, <cr> will open the file by:
+"                               =0: re-using the same window
+"                               =1: horizontally splitting the window first
+"                               =2: vertically   splitting the window first
+"                               =3: open file in new tab
+"                               =4: act like "P" (ie. open previous window)
+"                                   Note that g:netrw_preview may be used
+"                                   to get vertical splitting instead of
+"                                   horizontal splitting.
+"
 let g:netrw_browse_split = 4
 " open new file in the right side vertically
+" g:netrw_altv                  change from left splitting to right splitting
 let g:netrw_altv = 1
 let g:netrw_winsize = 25
+
+"                                 netrw-quickmap netrw-quickmaps
+" QUICK REFERENCE: MAPS                           netrw-browse-maps {{{2
+"
+"           ---                   -----------------                       ----
+"           Map                   Quick Explanation                       Link
+"           ---                   -----------------                       ----
+"          <F1>   Causes Netrw to issue help
+"          <cr>   Netrw will enter the directory or read the file      netrw-cr
+"          <del>  Netrw will attempt to remove the file/directory      netrw-del
+"            -    Makes Netrw go up one directory                      netrw--
+"            a    Toggles between normal display,                      netrw-a
+"                 hiding (suppress display of files matching g:netrw_list_hide)
+"                 showing (display only files which match g:netrw_list_hide)
+"            c    Make browsing directory the current directory        netrw-c
+"            C    Setting the editing window                           netrw-C
+"            d    Make a directory                                     netrw-d
+"            D    Attempt to remove the file(s)/directory(ies)         netrw-D
+"            gb   Go to previous bookmarked directory                  netrw-gb
+"            gh   Quick hide/unhide of dot-files                       netrw-gh
+"          <c-h>  Edit file hiding list                             netrw-ctrl-h
+"            i    Cycle between thin, long, wide, and tree listings    netrw-i
+"          <c-l>  Causes Netrw to refresh the directory listing     netrw-ctrl-l
+"            mb   Bookmark current directory                           netrw-mb
+"            mc   Copy marked files to marked-file target directory    netrw-mc
+"            md   Apply diff to marked files (up to 3)                 netrw-md
+"            me   Place marked files on arg list and edit them         netrw-me
+"            mf   Mark a file                                          netrw-mf
+"            mh   Toggle marked file suffices' presence on hiding list netrw-mh
+"            mm   Move marked files to marked-file target directory    netrw-mm
+"            mp   Print marked files                                   netrw-mp
+"            mr   Mark files satisfying a shell-style regexp         netrw-mr
+"            mt   Current browsing directory becomes markfile target   netrw-mt
+"            mT   Apply ctags to marked files                          netrw-mT
+"            mu   Unmark all marked files                              netrw-mu
+"            mx   Apply arbitrary shell command to marked files        netrw-mx
+"            mz   Compress/decompress marked files                     netrw-mz
+"            o    Enter the file/directory under the cursor in a new   netrw-o
+"                 browser window.  A horizontal split is used.
+"            O    Obtain a file specified by cursor                    netrw-O
+"            p    Preview the file                                     netrw-p
+"            P    Browse in the previously used window                 netrw-P
+"            qb   List bookmarked directories and history              netrw-qb
+"            qf   Display information on file                          netrw-qf
+"            r    Reverse sorting order                                netrw-r
+"            R    Rename the designed file(s)/directory(ies)           netrw-R
+"            s    Select sorting style: by name, time, or file size    netrw-s
+"            S    Specify suffix priority for name-sorting             netrw-S
+"            t    Enter the file/directory under the cursor in a new tabnetrw-t
+"            u    Change to recently-visited directory                 netrw-u
+"            U    Change to subsequently-visited directory             netrw-U
+"            v    Enter the file/directory under the cursor in a new   netrw-v
+"                 browser window.  A vertical split is used.
+"            x    View file with an associated program                 netrw-x
+"            X    Execute filename under cursor via system()           netrw-X
+"
+"            %    Open a new file in netrw's current directory         netrw-%
 
 " always open netrw when openning vim
 "
@@ -140,6 +222,10 @@ let g:netrw_winsize = 25
 "   autocmd!
 "   autocmd VimEnter * :Vexplore
 " augroup END
+
+
+" 'let' form set expandtab
+let &expandtab=1
 
 
 " auto get back to the postion you left last time
@@ -317,9 +403,9 @@ inoremap <C-t> <Esc><Left>"zx"zpa
 
 " delete and backspace in insert and normal mode.
 "imap <C-d> <Del>
-imap <C-D> <C-O>x
+"imap <C-D> <C-O>x
 "inoremap <C-d> <Del>
-imap <C-h> <BS>
+"imap <C-h> <BS>
 
 " x and s won't yank
 nnoremap x "_x
@@ -335,7 +421,7 @@ inoremap <C-]> <Esc><Right>
 " e.g: :%s/\s\+//g prompt, and user cannot see it.
 
 " search text in project
-nmap <Leader>h :grep -n -r --exclude-dir="node_modules" --exclude-dir="mochawesome-report" --exclude-dir="domino-iam-service" --exclude-dir="build" --exclude-dir="logs" --exclude-dir="website/node_modules" --exclude="*.swp" --exclude="*.orig" -i  ./<Left><Left><Left>
+nmap <Leader>h :grep -n -r --exclude-dir="node_modules" --exclude-dir="mochawesome-report" --exclude-dir="domino-iam-service" --exclude-dir="build" --exclude-dir="logs" --exclude-dir="website/node_modules" --exclude-dir=".tmp" --exclude="*.swp" --exclude="*.orig" -i  ./<Left><Left><Left>
 
 " to avoid Arrow Key not works in Vim.
 "set term=ansi

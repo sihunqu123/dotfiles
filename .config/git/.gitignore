@@ -1,0 +1,8 @@
+.vscode
+*.orig
+*.swp
+memoryStorage.json
+
+
+.npmrc
+
