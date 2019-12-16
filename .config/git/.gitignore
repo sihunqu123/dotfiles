@@ -1,8 +1,11 @@
 .vscode
 *.orig
 *.swp
+*.swo
 memoryStorage.json
 
 
 .npmrc
 
+
+production.xml

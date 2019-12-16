@@ -57,6 +57,9 @@ Plugin 'xolox/vim-misc'
 " Plugin for vim session
 Plugin 'xolox/vim-session'
 
+" Plugin for vim session
+Plugin 'Xuyuanp/nerdtree-git-plugin'
+
 " plugin from http://vim-scripts.org/vim/scripts.html
 " Plugin 'L9'
 " Git plugin not hosted on GitHub
