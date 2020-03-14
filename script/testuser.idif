@@ -1,0 +1,8 @@
+dn: cn=test user1100,ou=people,dc=example,dc=com
+cn: test user1100
+objectClass: inetOrgPerson
+sn: user1100
+displayName: testuser1100
+title: title1100
+mail: testuser1100@example.com
+userPassword: passw0rd

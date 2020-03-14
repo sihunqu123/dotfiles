@@ -1,0 +1,8 @@
+dn: cn=contact user400,ou=contact,dc=example,dc=com
+cn: contact user400
+objectClass: inetOrgPerson
+sn: user400
+title: title400
+displayName: contactuser400
+mail: contactuser400@example.com
+userPassword: passw0rd

@@ -1,0 +1,4 @@
+dn: dc=longjing,dc=com
+dc: longjing
+objectclass: top
+objectclass: domain

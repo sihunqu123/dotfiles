@@ -1,0 +1,4 @@
+dn: cn=test0 user,ou=people,dc=example,dc=com
+cn: test0 user
+objectClass: person
+sn: user

@@ -1,0 +1,5 @@
+dn: cn=Chen Tian,ou=contact,dc=example,dc=com
+cn: Chen Tian
+telephoneNumber: 17723010099
+objectClass: person
+sn: Tian

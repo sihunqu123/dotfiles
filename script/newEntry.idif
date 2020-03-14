@@ -1,0 +1,4 @@
+dn: cn=Chen Tian,ou=people,dc=example,dc=com
+cn: Chen Tian
+objectClass: person
+sn: Tian

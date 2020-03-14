@@ -1,0 +1,7 @@
+dn: cn=testuser n{NUMBER},ou=people,dc=example,dc=com
+cn: testuser n{NUMBER}
+objectClass: inetOrgPerson
+sn: n{NUMBER}
+displayName: testuser{NUMBER}
+mail: testuser{NUMBER}@example.com
+userPassword: passw0rd

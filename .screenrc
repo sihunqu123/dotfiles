@@ -181,12 +181,8 @@ termcapinfo linux C8
 # old rxvt versions also need this
 # termcapinfo rxvt C8
 
-# Yet another hack:
-# Prepend/append register [/] to the paste if ^a^] is pressed.
-# This lets me have autoindent mode in vi.
-#register [ "\033:se noai\015a"
-#register ] "\033:se ai\015a"
-#bind ^] paste [.]
+# enable mouse scrolling
+# termcapinfo xterm* ti@:te@
 
 ################
 #
@@ -265,4 +261,12 @@ hardstatus alwaysignore
 
 caption always
 caption string "%{kg}%-w%{wb}|%n %t|%{-}%+w"
-hardstatus alwayslastline "You are on: %H  | Now is:  %C%a  %d %M %Y |"
+# hardstatus alwayslastline "You are on: %H  | Now is:  %C%a  %d %M %Y |"
+hardstatus string '%{= kG}[ %{G}%H %{g}][%= %{= kw}%?%-Lw%?%{r}(%{W}%n*%f%t%?(%u)%?%{r})%{w}%?%+Lw%?%?%= %{g}][%{B} %m-%d %{W} %c %{g}]'
+
+# 消除残余的编辑文本
+# 当你在 screen 内打开文本编辑器再关掉它，文本内容仍然会在终端上显示。要解决这点，将下列内容加入 ~/.screenrc 中：
+altscreen on
+
+# disable dynamic title
+dynamictitle  [on|off]

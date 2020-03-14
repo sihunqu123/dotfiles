@@ -1,0 +1,7 @@
+dn: cn=tiantc,ou=people,dc=example,dc=com
+cn: tiantc
+objectClass: inetOrgPerson
+sn: chen
+displayName: tiantc
+mail: tiantc@example.com
+userPassword: passw0rd

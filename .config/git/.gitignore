@@ -6,6 +6,7 @@ memoryStorage.json
 
 
 .npmrc
+.yarnrc
 
 
 production.xml

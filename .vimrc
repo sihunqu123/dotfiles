@@ -424,7 +424,7 @@ inoremap <C-]> <Esc><Right>
 " e.g: :%s/\s\+//g prompt, and user cannot see it.
 
 " search text in project
-nmap <Leader>h :grep -n -r --exclude-dir="node_modules" --exclude-dir="mochawesome-report" --exclude-dir="domino-iam-service" --exclude-dir="build" --exclude-dir="logs" --exclude-dir="website/node_modules" --exclude-dir=".tmp" --exclude="*.swp" --exclude="*.orig" -i  ./<Left><Left><Left>
+nmap <Leader>h :grep -n -r --exclude-dir="node_modules" --exclude-dir="mochawesome-report" --exclude-dir="domino-iam-service" --exclude-dir="build" --exclude-dir="logs" --exclude-dir="website/node_modules" --exclude-dir="dist" --exclude-dir=".tmp" --exclude="*.swp" --exclude="*.orig" -i  ./<Left><Left><Left>
 
 " to avoid Arrow Key not works in Vim.
 "set term=ansi

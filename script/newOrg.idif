@@ -1,0 +1,4 @@
+dn: ou=contact,dc=example,dc=com
+ou: contact
+objectClass: organizationalUnit
+objectclass: top
