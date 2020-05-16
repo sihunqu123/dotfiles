@@ -13,11 +13,57 @@ Plugin 'VundleVim/Vundle.vim'
 
 " The following are examples of different formats supported.
 " Keep Plugin commands between vundle#begin/end.
-" plugin on GitHub repo
-Plugin 'tpope/vim-fugitive'
+"Plugin 'tpope/vim-fugitive'
+
+" Plugin for reopen lastest closed tab
+" usage: Ctrl+W u
+Plugin 'AndrewRadev/undoquit.vim'
 
 " Plugin for fuzzy file search
 Plugin 'wincent/command-t'
+
+" Plugin for merge all windows of a tab into current tab
+" usage: Tabmerge 3 right
+" to merge all buffers in tab 3 into current tab
+Plugin 'vim-scripts/Tabmerge'
+
+" Plugin for resolving conflicts during three-way merges.
+" usage: Tabmerge 3 right
+" for more info: :help splice
+Plugin 'sjl/splice.vim'
+
+" Plugin for showing marks
+" usage: 
+"  mx           Toggle mark 'x' and display it in the leftmost column
+"  dmx          Remove mark 'x' where x is a-zA-Z
+"
+"  m,           Place the next available mark
+"  m.           If no mark on line, place the next available mark. Otherwise, remove (first) existing mark.
+"  m-           Delete all marks from the current line
+"  m<Space>     Delete all marks from the current buffer
+"  ]`           Jump to next mark
+"  [`           Jump to prev mark
+"  ]'           Jump to start of next line containing a mark
+"  ['           Jump to start of prev line containing a mark
+"  `]           Jump by alphabetical order to next mark
+"  `[           Jump by alphabetical order to prev mark
+"  ']           Jump by alphabetical order to start of next line having a mark
+"  '[           Jump by alphabetical order to start of prev line having a mark
+"  m/           Open location list and display marks from current buffer. this
+"                 list might be all blank when quickfix list used(]q, [q);
+"
+"  m[0-9]       Toggle the corresponding marker !@#$%^&*()
+"  m<S-[0-9]>   Remove all markers of the same type (S -> shift)
+"  ]-           Jump to next line having a marker of the same type
+"  [-           Jump to prev line having a marker of the same type
+"  ]=           Jump to next line having a marker of any type
+"  [=           Jump to prev line having a marker of any type
+"  m?           same with m/
+"  m<BS>        Remove all markers
+" :SignatureToggle
+" :SignatureRefresh
+Plugin 'kshenoy/vim-signature'
+
 
 " Plugin for file tree
 Plugin 'scrooloose/nerdtree'
@@ -32,7 +78,7 @@ Plugin 'will133/vim-dirdiff'
 Plugin 'tpope/vim-sensible'
 
 " Plugin for compelte-prompt-list
-Plugin 'Valloric/YouCompleteMe'
+"Plugin 'Valloric/YouCompleteMe'
 
 " Plugin for execute file with system default app
 Plugin 'ivalkeen/nerdtree-execute'
@@ -46,9 +92,16 @@ Plugin 'maxmellon/vim-jsx-pretty'
 Plugin 'leafgarland/typescript-vim'
 
 " Plugin for buffer explorer
-"Plugin 'jlanzarotta/bufexplorer'
+" usage:
+"   \<Leader\>be normal open
+"   \<Leader\>bt toggle open / close
+"   \<Leader\>bs force horizontal split open
+"   \<Leader\>bv force vertical split open
+" other usage could be found via pressing F1 in bufexplorer window
+Plugin 'jlanzarotta/bufexplorer'
 
 " Plugin for mini buffer explorer
+" to show all buffers in one line in the bottom of tab 1
 "Plugin 'fholgado/minibufexpl.vim'
 
 " base Plugin consumed by xolox/vim-session
@@ -84,6 +137,37 @@ filetype plugin indent on    " required
 """""""""""""""""""""""""""""
 " Common Settings
 """""""""""""""""""""""""""""
+
+" will never check the gui_running, since will never use the gvim. {
+"if has("gui_running")
+" echo "yes, we have a GUI, which means I am in gvim"
+"else
+" echo "Boring old console, which means I am in tty(console) vim mode"
+"endif
+"}
+
+""""""" deal with OS. {
+" refer: https://vi.stackexchange.com/questions/2572/detect-os-in-vimscript/2577#2577
+if !exists("g:os")
+    if has("win64") || has("win32") || has("win16")
+        let g:os = "Windows"
+    else
+        let g:os = substitute(system('uname'), '\n', '', '')
+    endif
+endif
+
+" then we use folowing to judge OS.
+"if has("gui_running")
+"    if g:os == "Darwin"
+"        set guifont=Fira\ Mono:h12
+"    elseif g:os == "Linux"
+"        set guifont=Fira\ Mono\ 10
+"    elseif g:os == "Windows"
+"        set guifont=Fira_Mono:h12:cANSI
+"    endif
+"endif
+"}
+
 syntax on
 " required by YouCompleteMe
 set encoding=utf-8
@@ -95,6 +179,7 @@ set confirm
 set ignorecase
 set smartcase
 set hlsearch
+set cmdheight=2
 
 set notitle
 
@@ -103,19 +188,22 @@ let mapleader = ","
 " set tabstop=2 softtabstop=2 expandtab shiftwidth=2 smarttab
 set tabstop=2 softtabstop=2 shiftwidth=2 smarttab
 set expandtab
-" to make pasting from clipboard works properly
-set paste
+" to make pasting from clipboard works properly. PS: we comment out `set paste` since it would reset the `set expandtab`
+"set paste
 set autoindent
+" able to move cursor to all place even when this column doesn't exit
+set virtualedit=all
 set backspace=indent,eol,start
 set ff=unix
 " set lcs=tab:>-,trail:\ ,eol:$
 set list lcs=tab:»·
 
-set laststatus=2
+" won't works when `lightline.vim` is working
 " set statusline=%t\ %y\ format:\ %{&ff};\ [%c,%l]
 
 " show full filepath
-set statusline+=%F
+" won't works when `lightline.vim` is working
+"set statusline+=%F
 
 
 " Open new split panes to right and bottom, which feels more natural than Vim's default
@@ -129,12 +217,58 @@ colorscheme molokai
 " colo desert
 
 
-" Trailing space
+"""""""""""""""""""""""""""""" Trailing space
 highlight ExtraWhitespace ctermbg=red guibg=red
 autocmd ColorScheme * highlight ExtraWhitespace ctermbg=red guibg=red
 match ExtraWhitespace /\s\+$/
 " to remove trailing space
 nmap <Leader>c :%s/\s\+$//g
+
+
+" Status Line {
+" set laststatus=2                             " always show statusbar
+" set statusline=
+" set statusline+=%-10.3n\                     " buffer number
+" set statusline+=%f\                          " filename
+" set statusline+=%h%m%r%w                     " status flags
+" set statusline+=\[%{strlen(&ft)?&ft:'none'}] " file type
+" set statusline+=%=                           " right align remainder
+" set statusline+=0x%-8B                       " character value
+" set statusline+=%-14(%l,%c%V%)               " line, character
+" set statusline+=%<%P                         " file position
+"}
+
+" Triger `autoread` when files changes on disk
+" https://unix.stackexchange.com/questions/149209/refresh-changed-content-of-file-opened-in-vim/383044#383044
+" https://vi.stackexchange.com/questions/13692/prevent-focusgained-autocmd-running-in-command-line-editing-mode
+" When changes determined, then use :DiffSaved to diff the change between vim and external program
+" autocmd FocusGained,BufEnter,CursorHold,CursorHoldI *
+autocmd InsertEnter *
+  \ if mode() !~ '\v(c|r.?|!|t)' && getcmdwintype() == '' | checktime | endif
+
+" Notification after file change
+" The first command selects a particular highlight mode for any subsequent echo calls. When echo is called the message will be displayed on the status line with approriate color and/or format (in my case white on yellow text). Don't forget the second echohl to return to regular highlighting.
+" https://vi.stackexchange.com/questions/13091/autocmd-event-for-autoread
+"autocmd FileChangedShellPost *
+"  \ echohl WarningMsg | echo "File changed on disk. It's dirty buffer" | echohl None
+"  \ echohl WarningMsg | echo "File changed on disk. Buffer reloaded." | echohl None
+
+"autocmd FocusGained,BufEnter,CursorHold,CursorHoldI *
+"        \ if mode() !~ '\v(c|r.?|!|t)' && getcmdwintype() == '' | checktime | endif
+
+
+" show changes before save
+" usage: run :DiffSaved
+" refer: https://stackoverflow.com/questions/749297/can-i-see-changes-before-i-save-my-file-in-vim
+function! s:DiffWithSaved()
+  let filetype=&ft
+  diffthis
+  vnew | r # | normal! 1Gdd
+  diffthis
+  exe "setlocal bt=nofile bh=wipe nobl noswf ro ft=" . filetype
+endfunction
+com! DiffSaved call s:DiffWithSaved()
+
 
 " netrw Settings
 "g:netrw_alto    control above/below splitting
@@ -228,7 +362,7 @@ let g:netrw_winsize = 25
 
 
 " 'let' form set expandtab
-let &expandtab=1
+" let &expandtab=1
 
 
 " auto get back to the postion you left last time
@@ -302,8 +436,67 @@ endfunction
 " call NERDTreeHighlightFile('js', 'Red', 'none', '#ffa500', '#151515')
 " call NERDTreeHighlightFile('php', 'Magenta', 'none', '#ff00ff', '#151515')
 
-" set python3's path for YouCompleteMe
-let g:ycm_server_python_interpreter="/Library/Frameworks/Python.framework/Versions/3.6/bin/python3"
+" variable scope test {
+let g:aaa="value of aaa"
+" this aaa will be printed out
+"echo aaa
+
+" will print
+" ➜  atlas-ui git:(upload) ✗ vim Jenkinsfile
+" value of aaa before
+" linux
+" linux bbb
+" Press ENTER or type command to continue
+"if g:os == "Darwin"
+"  echo aaa . " before"
+"  let g:aaa="mac"
+"elseif g:os == "Linux"
+"  echo aaa . " before"
+"  let g:aaa="linux"
+"" even when the bbb is defined inside a if statement, bbb can still be accessed by outside
+"  let g:bbb="linux bbb"
+"elseif g:os == "Windows"
+"  echo aaa . " before"
+"  let g:aaa="windows"
+"endif
+"
+"echo aaa
+"echo bbb
+"}
+
+
+
+
+
+" set python3's path for YouCompleteMe {
+" this only used by MacOS.
+if g:os == "Darwin"
+  let g:ycm_server_python_interpreter="/Library/Frameworks/Python.framework/Versions/3.6/bin/python3"
+endif
+"}
+
+
+""""""""""""" lightline.vim settings {
+set laststatus=2
+" only `seoul256` can display correctly
+let g:lightline = {
+  \ 'colorscheme': 'seoul256',
+  \ 'active': {
+  \   'left': [ [ 'mode', 'paste' ],
+  \             [ 'readonly', 'filename', 'modified', 'helloworld', 'bufnumber' ] ]
+  \ },
+  \ 'component': {
+  \   'helloworld': 'Hello, world!',
+  \   'filename': '%f',
+  \   'bufnumber': '%n'
+  \ },
+\ }
+"}
+
+
+""""""""""""" undoquit.vim settings {
+nnoremap <c-w>c :call undoquit#SaveWindowQuitHistory()<cr><c-w>c
+"}
 
 
 " requires fholgado/minibufexpl
@@ -376,7 +569,7 @@ vnoremap // y/\V<C-r>=escape(@",'/\')<CR><CR>
 
 " hightlight current word without jumping to next match
 nnoremap <silent> <Space><Space> "zyiw:let @/ = '\<' . @z . '\>'<CR>:set hlsearch<CR>
-" highlight current word and then trying to substitute it
+" highlight current word and then trying to substitute it [replace]
 nmap # <Space><Space>:%s/<C-r>///g<Left><Left>
 
 " same in visualMod
@@ -415,7 +608,7 @@ nnoremap x "_x
 nnoremap s "_s
 
 " paste without change register
-xnoremap <expr> p 'pgv"'.v:register.'y`>'
+"xnoremap <expr> p 'pgv"'.v:register.'y`>'
 
 
 inoremap <C-]> <Esc><Right>
@@ -424,7 +617,7 @@ inoremap <C-]> <Esc><Right>
 " e.g: :%s/\s\+//g prompt, and user cannot see it.
 
 " search text in project
-nmap <Leader>h :grep -n -r --exclude-dir="node_modules" --exclude-dir="mochawesome-report" --exclude-dir="domino-iam-service" --exclude-dir="build" --exclude-dir="logs" --exclude-dir="website/node_modules" --exclude-dir="dist" --exclude-dir=".tmp" --exclude="*.swp" --exclude="*.orig" -i  ./<Left><Left><Left>
+nmap <Leader>h :grep -n -r --exclude-dir="node_modules" --exclude-dir="mochawesome-report" --exclude-dir="domino-iam-service" --exclude-dir="build" --exclude-dir="logs" --exclude-dir="website/node_modules" --exclude-dir="dist" --exclude-dir=".tmp" --exclude-dir="coverage" --exclude="*.swp" --exclude="*.orig" -i  ./<Left><Left><Left>
 
 " to avoid Arrow Key not works in Vim.
 "set term=ansi
@@ -437,6 +630,74 @@ nmap <Leader>h :grep -n -r --exclude-dir="node_modules" --exclude-dir="mochaweso
 "   \ 'colorscheme': 'wombat',
 " \ }
 
+"""""""""""""""""" to switch back to the last active tab {
+" refer: https://stackoverflow.com/questions/2119754/switch-to-last-active-tab-in-vim
+if !exists('g:lasttab')
+  let g:lasttab = 1
+endif
+nmap <Leader>` :exe "tabn ".g:lasttab<CR>
+au TabLeave * let g:lasttab = tabpagenr()
+"}
+
+""""""""""""""""""" Ngb to jump to buffer number N. {
+" The following lets you type Ngb to jump to buffer number N (a number from 1 to 99). For example, typing 12gb would jump to buffer 12.
+" refer: https://vim.fandom.com/wiki/Easier_buffer_switching
+
+let c = 1
+while c <= 99
+  execute "nnoremap " . c . "gb :" . c . "b\<CR>"
+  let c += 1
+endwhile
+"}
+
+" auto-complete for buffer name. {
+"you can use the Buffers menu to conveniently access buffers (tear off the menu to make an always-visible list).
+"Or, put the following in your vimrc:
+set wildchar=<Tab> wildmenu wildmode=full
+"Now, pressing Tab on the command line will show a menu to complete buffer and file names.
+"}
+
+" Buffers - explore/next/previous: F12, Shift-F12. {
+nnoremap <silent> <F12> :bn<CR>
+nnoremap <silent> <S-F12> :bp<CR>
+"}
+
+
+" After this, you will see the list of jumps and be asked to select a jump. {
+" If you type 4 and press Enter, it will take you back to the 4th jump.
+" If you type +4 and press Enter, it will take you forward to the 4th jump in the list.
+" If you press Escape, nothing happens.
+function! GotoJump()
+  jumps
+  let j = input("Please select your jump: ")
+  if j != ''
+    let pattern = '\v\c^\+'
+    if j =~ pattern
+      let j = substitute(j, pattern, '', 'g')
+      execute "normal " . j . "\<c-i>"
+    else
+      execute "normal " . j . "\<c-o>"
+    endif
+  endif
+endfunction
+nmap <Leader>j :call GotoJump()<CR>
+" You can also use g; and g, to move backward and forward in your edit locations.
+" Remember, jumps only works in one tab, it won't across tabs
+" refer: https://vim.fandom.com/wiki/Jumping_to_previously_visited_locations
+"}
+
+"""""""" auto reload this config after editing this file in this vim instance. {
+augroup reloadvimrc
+    au!
+    au BufWritePost .vimrc,_vimrc,vimrc,.gvimrc,_gvimrc,gvimrc so $MYVIMRC | if has('gui_running') | so $MYGVIMRC | endif
+augroup END
+"}
+
+" paste without change {
+"vnoremap <leader>p "_dP
+vnoremap <leader>p "0p
+noremap <leader>p "0p
+"}
 
 
 """""""""""""""""""""""""""""""
@@ -445,6 +706,8 @@ nmap <Leader>h :grep -n -r --exclude-dir="node_modules" --exclude-dir="mochaweso
 
 " vimReplace Memo
 ":'<,'>s/\n/\\r\\n' +\r    '/g
+" including $,{,}, They are all plain text.
+":'<,'>s/123/${all plainTxt}/g
 
 " vim format json Memo
 " format selected content
@@ -452,3 +715,17 @@ nmap <Leader>h :grep -n -r --exclude-dir="node_modules" --exclude-dir="mochaweso
 " format the whole file
 ":%!python -m json.tool
 
+
+"function! MergeTab()
+"    let bufnums = tabpagebuflist()
+"    hide tabclose
+"    topleft vsplit
+"    for n in bufnums
+"        execute 'sbuffer ' . n
+"        wincmd _
+"    endfor
+"    wincmd t
+"    quit
+"    wincmd =
+"endfunction
+"command! MergeTab call MergeTab()
