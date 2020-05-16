@@ -31,6 +31,8 @@
 	conflictstyle = diff3
 [mergetool]
 	prompt = false
+[difftool]
+	trustExitCode = true
 [color]
 	ui = true
 # only cwp git doesn't need proxy.
