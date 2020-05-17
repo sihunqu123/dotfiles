@@ -78,7 +78,7 @@ Plugin 'will133/vim-dirdiff'
 Plugin 'tpope/vim-sensible'
 
 " Plugin for compelte-prompt-list
-"Plugin 'Valloric/YouCompleteMe'
+Plugin 'Valloric/YouCompleteMe'
 
 " Plugin for execute file with system default app
 Plugin 'ivalkeen/nerdtree-execute'
@@ -180,6 +180,9 @@ set ignorecase
 set smartcase
 set hlsearch
 set cmdheight=2
+" display number of search matches & index of a current match
+" refer: https://github.com/google/vim-searchindex
+set shortmess-=S
 
 set notitle
 
@@ -568,12 +571,13 @@ let Tlist_Exit_OnlyWindow=1
 vnoremap // y/\V<C-r>=escape(@",'/\')<CR><CR>
 
 " hightlight current word without jumping to next match
-nnoremap <silent> <Space><Space> "zyiw:let @/ = '\<' . @z . '\>'<CR>:set hlsearch<CR>
+"nnoremap <silent> <Space><Space> "zyiw:let @/ = '\<' . @z . '\>'<CR>:set hlsearch<CR>
+nnoremap <silent> <Space><Space> "zyiw:let @/ = '\<' . @z . '\>'<CR>:set hlsearch<CR>:lvim <C-r>z %<CR>
 " highlight current word and then trying to substitute it [replace]
 nmap # <Space><Space>:%s/<C-r>///g<Left><Left>
 
 " same in visualMod
-xnoremap <silent> <Space> mz:call <SID>set_vsearch()<CR>:set hlsearch<CR>`z
+xnoremap <silent> <Space> mz:call <SID>set_vsearch()<CR>:set hlsearch<CR>`z:lvim <C-r>z %<CR>
 xnoremap * :<C-u>call <SID>set_vsearch()<CR>/<C-r>/<CR>
 xmap # <Space>:%s/<C-r>///g<Left><Left>
 
@@ -729,3 +733,6 @@ noremap <leader>p "0p
 "    wincmd =
 "endfunction
 "command! MergeTab call MergeTab()
+"
+"
+" press  g* to search without \< \>
