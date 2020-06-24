@@ -20,6 +20,11 @@ Plugin 'VundleVim/Vundle.vim'
 Plugin 'AndrewRadev/undoquit.vim'
 
 " Plugin for fuzzy file search
+" Way to build: {
+"   cd ~/.vim/bundle/command-t/ruby/command-t/ext/command-t && \
+"   ruby extconf.rb && \
+"   make
+" }
 Plugin 'wincent/command-t'
 
 " Plugin for merge all windows of a tab into current tab
@@ -68,6 +73,19 @@ Plugin 'kshenoy/vim-signature'
 " Plugin for file tree
 Plugin 'scrooloose/nerdtree'
 
+" Plugin for multiple-nodes operations in nerdtree
+" t Open selected files in tabs.
+" dd  Delete selected files from disk. If open in Vim, they remain open.
+" m Move the selected files to another directory. If open in Vim, the buffer will points to its old location.
+" c Copy selected files to another directory.
+Plugin 'PhilRunninger/nerdtree-visual-selection'
+
+" Plugin for showing file git status in nerdtree
+Plugin 'Xuyuanp/nerdtree-git-plugin'
+
+" Plugin for execute file with system default app
+Plugin 'ivalkeen/nerdtree-execute'
+
 " Plugin for Navigate throw quickfixlist
 Plugin 'tpope/vim-unimpaired'
 
@@ -80,11 +98,11 @@ Plugin 'tpope/vim-sensible'
 " Plugin for compelte-prompt-list
 Plugin 'Valloric/YouCompleteMe'
 
-" Plugin for execute file with system default app
-Plugin 'ivalkeen/nerdtree-execute'
-
 " Plugin for statueline:  https://github.com/itchyny/lightline.vim
 Plugin 'itchyny/lightline.vim'
+
+" Plugin to Adds file type icons to Vim plugins such as: NERDTree, vim-airline, CtrlP, unite, Denite, lightline, vim-startify and many more
+Plugin 'ryanoasis/vim-devicons'
 
 " Plugin for javascript and typescript(tsx).
 Plugin 'pangloss/vim-javascript'
@@ -109,9 +127,6 @@ Plugin 'xolox/vim-misc'
 
 " Plugin for vim session
 Plugin 'xolox/vim-session'
-
-" Plugin for vim session
-Plugin 'Xuyuanp/nerdtree-git-plugin'
 
 " plugin from http://vim-scripts.org/vim/scripts.html
 " Plugin 'L9'
@@ -183,6 +198,12 @@ set cmdheight=2
 " display number of search matches & index of a current match
 " refer: https://github.com/google/vim-searchindex
 set shortmess-=S
+" For example, save the files in a local directory if it exists. This is more
+" friendly if you often move your working directory around, and want to take
+" these files with you.
+set backupdir=.backup/,~/.backup/,/tmp//
+set directory=.swp/,~/.swp/,/tmp//
+set undodir=.undo/,~/.undo/,/tmp//
 
 set notitle
 
@@ -571,8 +592,8 @@ let Tlist_Exit_OnlyWindow=1
 vnoremap // y/\V<C-r>=escape(@",'/\')<CR><CR>
 
 " hightlight current word without jumping to next match
-"nnoremap <silent> <Space><Space> "zyiw:let @/ = '\<' . @z . '\>'<CR>:set hlsearch<CR>
-nnoremap <silent> <Space><Space> "zyiw:let @/ = '\<' . @z . '\>'<CR>:set hlsearch<CR>:lvim <C-r>z %<CR>
+nnoremap <silent> <Space><Space> "zyiw:let @/ = '\<' . @z . '\>'<CR>:set hlsearch<CR>
+"nnoremap <silent> <Space><Space> "zyiw:let @/ = '\<' . @z . '\>'<CR>:set hlsearch<CR>:lvim <C-r>z %<CR>
 " highlight current word and then trying to substitute it [replace]
 nmap # <Space><Space>:%s/<C-r>///g<Left><Left>
 
@@ -621,6 +642,9 @@ inoremap <C-]> <Esc><Right>
 " e.g: :%s/\s\+//g prompt, and user cannot see it.
 
 " search text in project
+" use this to grep only specific file type. (when --exclude used, --include will be ignored)
+" --include="*.js"
+" --include=\*.{py,pl,sh}
 nmap <Leader>h :grep -n -r --exclude-dir="node_modules" --exclude-dir="mochawesome-report" --exclude-dir="domino-iam-service" --exclude-dir="build" --exclude-dir="logs" --exclude-dir="website/node_modules" --exclude-dir="dist" --exclude-dir=".tmp" --exclude-dir="coverage" --exclude="*.swp" --exclude="*.orig" -i  ./<Left><Left><Left>
 
 " to avoid Arrow Key not works in Vim.
@@ -736,3 +760,4 @@ noremap <leader>p "0p
 "
 "
 " press  g* to search without \< \>
+"

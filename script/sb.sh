@@ -115,7 +115,7 @@ function reloadAtlasUI {
   local -r project_name="atlas-ui"
   local -r linux_project_path="${githubPath}/${project_name}"
   local -r container_project_path=/usr/local/site/${project_name}
-  local -r containerName="atlas-uiui-1"
+  local -r containerName="atlas-uiui-0"
 
   if [ -e ${linux_project_path}/dist/ ]; then
     echo "${linux_project_path}/dist/ exists"
@@ -140,7 +140,7 @@ function filesSVC {
   local -r host_project_path="${host_githubPath}/${project_name}"
   local -r host_side_project_path="${host_side_githubPath}/${project_name}"
   local -r container_project_path=/usr/local/site/${project_name}
-  local -r containerName="atlas-files-1"
+  local -r containerName="atlas-files-0"
 
   local -r method=${1}
 
@@ -174,10 +174,12 @@ function filesSVC {
     fi
 
     echo "about to reload debug "
-    set -x
+    set +x
     find ${linux_project_path} -mindepth 1 -maxdepth 1 | _grep -Ev "/(config|.git|node_modules)$" |xargs -L 1 -I % sh -c "
-      cp -fRpv % ${host_project_path} && docker cp % ${containerName}:${container_project_path}
+      cp -fRpv % ${host_project_path} &&
+      docker cp % ${containerName}:${container_project_path}
     "
+
     find ${nodeCommonUitlsPath}/ -mindepth 1 -maxdepth 1 | _grep -P "(\/lib|src|.json)$" |xargs -L 1 -I % sh -c "
       mkdir -p ${linux_project_path}/${nodeCommonUitlsLibPath}/ && cp -fRpv % ${linux_project_path}/${nodeCommonUitlsLibPath}/ && 
       mkdir -p ${host_project_path}/${nodeCommonUitlsLibPath}/ && cp -fRpv % ${host_project_path}/${nodeCommonUitlsLibPath}/ && 
@@ -201,7 +203,7 @@ function reloadAPI-gateway {
   local -r linux_project_path="${githubPath}/api-gateway"
   local -r host_project_path="${host_githubPath}/api-gateway"
   local -r container_project_path="/usr/local/site/api-gateway"
-  local -r containerName="atlas-doad-1"
+  local -r containerName="atlas-doad-0"
 
   local -r isBrk=${2}
   local -r inspectVal="inspect"
@@ -239,7 +241,7 @@ function reloadAPI-gateway {
 function createBucket {
   local -r linux_mcPath=/opt/shared/mc
   local -r container_project_path=/opt/shared
-  local -r containerName="atlas-minio-1"
+  local -r containerName="atlas-minio-0"
 
   # first, check if the mc exits in ${linux_mcPath}
   if [ -e ${linux_mcPath} ]; then
@@ -286,11 +288,48 @@ function addDefaultUser {
 }
 
 # change the session timeout to a longer time
+
+# the unit of this SESSION_INACTIVE_TIMEOUT is:
+#   expire
+#   Expiration time of the item. If it's equal to zero, the item will never expire. You can also use Unix timestamp or a number of seconds starting from current time, but in the latter case the number of seconds may not exceed 2592000 (30 days).
+# refer: https://stackoverflow.com/questions/6027517/can-the-time-to-live-ttl-for-a-memcached-key-be-set-to-infinite
 function longerSession {
-  docker exec -it atlas-authen-1 sed -i 's/SESSION_INACTIVE_TIMEOUT =[^;]\+;/SESSION_INACTIVE_TIMEOUT = 999999;/g' /usr/local/site/authen-microservice/src/common/utils.js
-  docker exec -it atlas-authen-1 svc -du '/service/authen-microservice/'
+  # docker exec -it atlas-authen-0 sed -i 's/SESSION_INACTIVE_TIMEOUT =[^;]\+;/SESSION_INACTIVE_TIMEOUT = 999999;/g' /usr/local/site/authen-microservice/src/common/utils.js
+  docker exec -it atlas-authen-0 sed -i 's/SESSION_INACTIVE_TIMEOUT =[^;]\+;/SESSION_INACTIVE_TIMEOUT = 0;/g' /usr/local/site/authen-microservice/src/common/utils.js
+  docker exec -it atlas-authen-0 svc -du '/service/authen-microservice/'
 }
 
+# removeOperation, including container, images
+function removeOperation {
+  ## cancel pipefail, since below may failed when all are clean
+  set +o pipefail
+  # remove all atlas container
+  echo "about to stop all atlas container.."
+  docker ps -a |grep atlas |awk '{print $NF;}' |xargs -L 1 -I % docker container rm -f %
+  echo "===========result -  docker ps -a"
+  docker ps -a
+
+  # remove all service
+  echo "about to delete all atlas service..."
+  docker service ls  |awk '{if(NR > 1) print $1;}' |xargs -L 1 -I % docker service rm %
+  echo "===========result -  docker service ls"
+  docker service ls
+
+  # remove all config
+  echo "about to delete all atlas config..."
+  docker config ls |awk '{if(NR > 1) print $1;}' |xargs -L 1 -I % docker config rm %
+  echo "===========result -  docker config ls"
+  docker config ls
+
+  echo "about to clean all atlas volume..."
+
+  docker ps -a |grep atlas |awk '{ if(NR>-9) print $NF;}' |xargs -L 1 -I % docker rm --force %
+  docker volume ls |grep atlas |awk '{print $NF;}' |xargs -L 1 -I % docker volume rm %
+  echo "===========result -  docker volume ls"
+  docker volume ls
+
+  docker images |grep operation |awk '{print $3}' |uniq |xargs -L 1 -I % docker rmi --force %
+}
 
 # cleanAll, including container, svc, volume
 function cleanAll {
@@ -327,13 +366,13 @@ function cleanAll {
 # @param 1: the method to do
 #
 # # to sync AdminUI production
-# find /opt/github/Atlas/sourcecode/citadel-control-panel/dist/admin -mindepth 0 -maxdepth 1  -type f  |egrep "*\.(map|js|html)$" |xargs -L 1 -I % docker cp % atlas-uiui-1:/usr/local/site/citadel-control-panel/admin/
+# find /opt/github/Atlas/sourcecode/citadel-control-panel/dist/admin -mindepth 0 -maxdepth 1  -type f  |egrep "*\.(map|js|html)$" |xargs -L 1 -I % docker cp % atlas-uiui-0:/usr/local/site/citadel-control-panel/admin/
 function adminUI {
   local -r project_name="citadel-control-panel"
   local -r linux_project_path="${githubPath}/${project_name}"
   local -r tmp_linux_project_path_admin="${tmpPath}/${project_name}/admin"
   local -r container_project_path=/usr/local/site/${project_name}
-  local -r containerName="atlas-uiui-1"
+  local -r containerName="atlas-uiui-0"
 
   local -r method=${1}
 
@@ -374,27 +413,82 @@ function adminUI {
     cp -fRpv ${linux_project_path}/.tmp/assets/env.js ${linux_project_path}/.tmp/assets/local.atlas.com.cobrand.env.js
 
     # remove remote old files
-    docker exec -it atlas-uiui-1 rm -rfv ${container_project_path}/admin
+    docker exec -it atlas-uiui-0 rm -rfv ${container_project_path}/admin
     # cp local new files to remote
     docker cp ${linux_project_path}/.tmp/ ${containerName}:${container_project_path}/admin
          
-##  docker cp /opt/github/Atlas/sourcecode/citadel-control-panel/.tmp/app.js atlas-uiui-1:/usr/local/site/citadel-control-panel/admin/
-##  docker cp /opt/github/Atlas/sourcecode/citadel-control-panel/.tmp/app.js.map atlas-uiui-1:/usr/local/site/citadel-control-panel/admin/
-##  docker cp /opt/github/Atlas/sourcecode/citadel-control-panel/.tmp/index.html atlas-uiui-1:/usr/local/site/citadel-control-panel/admin/
+##  docker cp /opt/github/Atlas/sourcecode/citadel-control-panel/.tmp/app.js atlas-uiui-0:/usr/local/site/citadel-control-panel/admin/
+##  docker cp /opt/github/Atlas/sourcecode/citadel-control-panel/.tmp/app.js.map atlas-uiui-0:/usr/local/site/citadel-control-panel/admin/
+##  docker cp /opt/github/Atlas/sourcecode/citadel-control-panel/.tmp/index.html atlas-uiui-0:/usr/local/site/citadel-control-panel/admin/
   fi
 }
 
+function renameSpec {
+  cd /opt/github/Atlas/sourcecode/citadel-control-panel
+  local -r method=${1}
+  local -r paths='src/app src/components'
+
+
+  if [ "${method:-}" = "rename" ]; then # to rename to tiantcbak
+    function renameOnePath {
+      local -r doPath=${1}
+      for item  in $(find ${doPath} -mindepth 0 -maxdepth 999 -name "*.spec.js"); do
+        # echo "item: ${item}"
+        case "$item" in
+
+          (src/app/citadel/cobrand-admin/create-customer.controller.spec.js);&
+          (src/app/citadel/cobrand-admin/create-customer.controller.spec.js1)  echo  "${item} will skip ---------"
+            ;;
+          (*)
+            #       echo "${item}, won't skip"
+            mv -v "${item}" "${item}.tiantcbak" 
+            ;;
+        esac
+      done
+    }
+    
+    for p in ${paths}; do
+      renameOnePath ${p}
+    done
+   
+  else # to recover
+    function recoverOnePath {
+      local -r doPath=${1}
+      for item  in $(find ${doPath} -mindepth 0 -maxdepth 999 -name "*.tiantcbak"); do
+        # echo "item: ${item}"
+        mv -v "${item}" "${item%.tiantcbak}" 
+        #echo "${item%.tiantcbak}"
+      done
+    }
+
+    for p in ${paths}; do
+      recoverOnePath ${p}
+    done
+  fi
+}
+
+function debugSB {
+  local -r linux_project_path="${githubPath}/wispr-node-buildtools/sandbox"
+  local -r host_project_path="${host_githubPath}/sandbox"
+  cp -fRpv ${linux_project_path}/package* ${host_project_path}/ && cp -fRpv ${linux_project_path}/sandbox.js ${host_project_path}/
+  (\
+    cd ${linux_project_path} && \
+    node --inspect-brk=0.0.0.0:9241 ./sandbox.js -c init
+  )
+}
 
 # tail logs in container
 function tailLog {
-  # docker exec -it atlas-doad-1 tail -f /var/log/api-gateway/api-gateway.log
-  docker exec -it atlas-files-1 tail -f /var/log/files-microservice/files-microservice.log
+  # docker exec -it atlas-doad-0 tail -f /var/log/api-gateway/api-gateway.log
+  docker exec -it atlas-files-0 tail -f /var/log/files-microservice/files-microservice.log
 }
 
 if [ "${_project:-}" = "api-gateway" ] || [ "${_project:-}" = "api" ]; then
   reloadAPI-gateway ${_method} ${_param}
 elif [ "${_project:-}" = "files-microservice" ] || [ "${_project:-}" = "files-svc" ] || [ "${_project:-}" = "files" ]; then
   filesSVC ${_method} ${_param}
+elif [ "${_project:-}" = "renameSpec" ] || [ "${_project:-}" = "specUT" ]; then
+  renameSpec ${_method} ${_param}
 elif [ "${_project:-}" = "adminUI" ] || [ "${_project:-}" = "admin" ] || [ "${_project:-}" = "citadel-control-panel" ]; then
   adminUI ${_method} ${_param}
 elif [ "${_project:-}" = "atlas-ui" ] || [ "${_project:-}" = "ui" ]; then
@@ -407,6 +501,10 @@ elif [ "${_project:-}" = "longerSession" ] || [ "${_project:-}" = "session" ]; t
   longerSession ${_method} ${_param}
 elif [ "${_project:-}" = "clean" ] || [ "${_project:-}" = "cleanAll" ]; then
   cleanAll ${_method} ${_param}
+elif [ "${_project:-}" = "operation" ] || [ "${_project:-}" = "removeOperation" ]; then
+  removeOperation ${_method} ${_param}
+elif [ "${_project:-}" = "sandbox" ] || [ "${_project:-}" = "debugSB" ]; then
+  debugSB ${_method} ${_param}
 elif [ "${_project:-}" = "log" ] || [ "${_project:-}" = "tailLog" ]; then
   tailLog ${_method} ${_param}
 else 
@@ -428,7 +526,7 @@ exit ${ret}
 # ./build.js -b master -w HCLATLAS-file-service -d HCLATLAS-file-service
 
 # tailLog
-# docker exec -it atlas-doad-1 tail -f /var/log/api-gateway/api-gateway.log
+# docker exec -it atlas-doad-0 tail -f /var/log/api-gateway/api-gateway.log
 
 # install webpack
 # npm i webpack-cli webpack-bundle-analyzer  --save-dev
@@ -445,4 +543,12 @@ exit ${ret}
 #// And if anchorsInSight is availabe after scrolling, then we'll switch to the page of that anchor.
 #}
 
+# docker path
+# /opt/github/Atlas/sourcecode/wispr-node-buildtools/sandbox/buildroot/git/master/base/docker
+# /opt/github/Atlas/sourcecode/wispr-node-buildtools/sandbox/buildroot/git/master/docker
+# buildRoot: /opt/github/Atlas/sourcecode/wispr-node-buildtools/build_docker_images/../sandbox/buildroot/git/master, DATABAG_REPO_NAME: databag
+# buildRoot: /opt/github/Atlas/sourcecode/wispr-node-buildtools/build_docker_images/../sandbox/buildroot/git/master, DOCKER_REPO_NAME: docker
+# baseDockerPath: /opt/github/Atlas/sourcecode/wispr-node-buildtools/build_docker_images/../sandbox/buildroot/git/master/base, DOCKER_REPO_NAME: docker
+# base: master, docker: master
 
+# ssh -i ~/.ssh/mountain2.pem ubuntu@moutain02.atlahcl.com
