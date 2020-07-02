@@ -3,8 +3,8 @@
 " File highlights.csv (in same directory as script) defines the highlights.
 " ##########################################################################
 " Type '\m' to toggle mapping of keypad on/off (assuming \ leader).        #
-" Type '\f' to find the next match; '\F' to find backwards.                #
-" Can also type '\n' or '\N' for search; then n or N will find next.       #
+" Type '-f' to find the next match; '-F' to find backwards.                #
+" Can also type '-n' or '-N' for search; then n or N will find next.       #
 " ##########################################################################
 " On the numeric keypad, press:
 "   1 to highlight visually selected text or current word

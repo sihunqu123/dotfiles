@@ -1,4 +1,7 @@
-#!/usr/bin/env bash
+#!/bin/bash 
+
+shopt -s expand_aliases
+############!/usr/bin/env bash
 
 #idifFileName="testuser"
 #cat > ./${idifFileName}.idif <<HERE
@@ -16,3 +19,18 @@
 
 
 # for p in 
+
+aaa=" a Pi "
+bbb=" api "
+
+echo "1 ${aaa:-} 2"
+echo "3 ${aaa,,} 4"
+echo "3 ${aaa^^} 4"
+
+if [ "${bbb:-}" = "api-gateway" ] || [ "${bbb:-}" = "api" ]; then
+  echo "if"
+fi
+
+if [ "${bbb:-}" = "api-gateway" ] || [ "${bbb:-}" = "null" ]; then
+  echo "if"
+fi

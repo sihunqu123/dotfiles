@@ -29,6 +29,13 @@ function hasCommand {
   fi
 }
 
+function getPathNameInfo {
+  thePath=$(echo ${theStr} | grep -oP ".*\/(?=[^/]+)") && echo "path: ${thePath}"
+  theFile=${theStr#${thePath}} && echo "filename: ${theFile}"
+  theNameOnly=${theFile%.*} && echo "nameOnly(without Extension): ${theNameOnly}"
+  theDotExtension=${theFile#${theNameOnly}} && echo "dotExtension: ${theDotExtension}"
+}
+
 declare -r uname=$(uname)
 declare currentOS=""
 # to make `grep`  compatible with all platforms
@@ -284,7 +291,15 @@ function createBucket {
 
 # add default users
 function addDefaultUser {
-  docker exec -it -u 0 atlas-operation sh -c 'node /usr/local/src/scripts/operation/admin.js addDefaultUsers'
+  local -r method=${1}
+  local -r isBrk=${2}
+  local inspectVal="inspect"
+
+  if [ "${isBrk:-}" = "true" ] || [ "${isBrk:-}" = "1" ]; then
+    inspectVal="inspect-brk"
+  fi
+
+  docker exec -it -u 0 atlas-operation sh -c "node --${inspectVal}=0.0.0.0:9241 /usr/local/src/scripts/operation/admin.js addDefaultUsers"
 }
 
 # change the session timeout to a longer time
@@ -389,37 +404,35 @@ function adminUI {
     echo -e -n "Succeed in syncing remote files to local ${tmpPath}!"
   else # to sync and restart
     echo "about to reload debug "
-    set -x
+#   set -x
 
     # first cp the build result template from container to .tmp
-    cp -fRpv ${tmp_linux_project_path_admin}/{app,index.html} ${linux_project_path}/.tmp/
-    mkdir -p ${linux_project_path}/.tmp/assets
-    # then continue to sync some resources from container to .tmp/assets
-    cp -fRpv ${tmp_linux_project_path_admin}/assets/{fonts,libs} ${linux_project_path}/.tmp/assets/
-    # then sync some resources from local src
-    cp -fRpv ${linux_project_path}/src/app/i18n ${linux_project_path}/.tmp/app/
-    cp -fRpv ${linux_project_path}/src/assets/{env.js,theme.js,theme.scss}  ${linux_project_path}/.tmp/assets/
+#   cp -fRpv ${tmp_linux_project_path_admin}/{app,index.html} ${linux_project_path}/.tmp/
+#   mkdir -p ${linux_project_path}/.tmp/assets
+#   # then continue to sync some resources from container to .tmp/assets
+#   cp -fRpv ${tmp_linux_project_path_admin}/assets/{fonts,libs} ${linux_project_path}/.tmp/assets/
+#   # then sync some resources from local src
+#   cp -fRpv ${linux_project_path}/src/app/i18n ${linux_project_path}/.tmp/app/
+#   cp -fRpv ${linux_project_path}/src/assets/{env.js,theme.js,theme.scss}  ${linux_project_path}/.tmp/assets/
     
     # generate some default cobrand configs
 #   local.atlas.com.cobrand
-#
-#   
-#   for fileFullPath in ${linux_project_path}/.tmp/assets/{env.js,theme.scss,theme.js}; do
-#      
-#   done
-    cp -fRpv ${linux_project_path}/.tmp/assets/env.js ${linux_project_path}/.tmp/assets/local.atlas.com.cobrand.env.js
-    cp -fRpv ${linux_project_path}/.tmp/assets/theme.scss ${linux_project_path}/.tmp/assets/local.atlas.com.cobrand.theme.css
-    cp -fRpv ${linux_project_path}/.tmp/assets/theme.js ${linux_project_path}/.tmp/assets/local.atlas.com.cobrand.theme.js
-    cp -fRpv ${linux_project_path}/.tmp/assets/env.js ${linux_project_path}/.tmp/assets/local.atlas.com.cobrand.env.js
+ 
+    
+    for fileFullPath in ${linux_project_path}/.tmp/assets/{env.js,theme.scss,theme.js}; do
+      echo "filePullPath: ${fileFullPath}"
+       
+    done
 
-    # remove remote old files
-    docker exec -it atlas-uiui-0 rm -rfv ${container_project_path}/admin
-    # cp local new files to remote
-    docker cp ${linux_project_path}/.tmp/ ${containerName}:${container_project_path}/admin
-         
-##  docker cp /opt/github/Atlas/sourcecode/citadel-control-panel/.tmp/app.js atlas-uiui-0:/usr/local/site/citadel-control-panel/admin/
-##  docker cp /opt/github/Atlas/sourcecode/citadel-control-panel/.tmp/app.js.map atlas-uiui-0:/usr/local/site/citadel-control-panel/admin/
-##  docker cp /opt/github/Atlas/sourcecode/citadel-control-panel/.tmp/index.html atlas-uiui-0:/usr/local/site/citadel-control-panel/admin/
+#   cp -fRpv ${linux_project_path}/.tmp/assets/env.js ${linux_project_path}/.tmp/assets/local.atlas.com.cobrand.env.js
+#   cp -fRpv ${linux_project_path}/.tmp/assets/theme.scss ${linux_project_path}/.tmp/assets/local.atlas.com.cobrand.theme.css
+#   cp -fRpv ${linux_project_path}/.tmp/assets/theme.js ${linux_project_path}/.tmp/assets/local.atlas.com.cobrand.theme.js
+#   cp -fRpv ${linux_project_path}/.tmp/assets/env.js ${linux_project_path}/.tmp/assets/local.atlas.com.cobrand.env.js
+
+#   # remove remote old files
+#   docker exec -it atlas-uiui-0 rm -rfv ${container_project_path}/admin
+#   # copy local new files to remote
+#   docker cp ${linux_project_path}/.tmp/ ${containerName}:${container_project_path}/admin
   fi
 }
 
@@ -467,13 +480,45 @@ function renameSpec {
   fi
 }
 
+function syncDockerRepo {
+  local -r linux_project_path="${githubPath}/wispr-node-buildtools"
+
+  (\
+    cd ${linux_project_path}/sandbox/buildroot/git/master/docker && \
+    git pull origin master --rebase
+    git push -f -u mine master
+  )
+
+  (\
+    cd ${linux_project_path}/sandbox/buildroot/git/master/base/docker && \
+    git fetch mine
+    git reset --hard mine/master
+  )
+}
+
+function syncOperation {
+  # find /opt/github/Atlas/sourcecode/wispr-node-buildtools/sandbox/buildroot/git/master/docker/operation/scripts/operation/ -maxdepth 1 -mindepth 1 -print |grep -v "\.swp" |
+  local -r project_name="wispr-node-buildtools"
+  local -r linux_project_path="${githubPath}/${project_name}"
+  local -r linux_operation_path="${linux_project_path}/sandbox/buildroot/git/master/docker/operation/scripts/operation"
+  local -r container_project_path=/usr/local/src/scripts/operation/
+  local -r containerName="atlas-operation"
+
+  cp  -fRpv ${linux_operation_path} ${host_githubPath}/
+
+  echo "sync local into operation docker start.... linux_operation_path: ${linux_operation_path}"
+
+  find ${linux_operation_path}/ -maxdepth 1 -mindepth 1 -print |_grep -v "\.swp" |xargs -L 1 -I % docker cp % ${containerName}:${container_project_path}/
+  echo "sync local into operation docker done"
+}
+
 function debugSB {
   local -r linux_project_path="${githubPath}/wispr-node-buildtools/sandbox"
   local -r host_project_path="${host_githubPath}/sandbox"
   cp -fRpv ${linux_project_path}/package* ${host_project_path}/ && cp -fRpv ${linux_project_path}/sandbox.js ${host_project_path}/
   (\
     cd ${linux_project_path} && \
-    node --inspect-brk=0.0.0.0:9241 ./sandbox.js -c init
+    node --inspect-brk=0.0.0.0:9246 ./sandbox.js -c init
   )
 }
 
@@ -489,9 +534,9 @@ elif [ "${_project:-}" = "files-microservice" ] || [ "${_project:-}" = "files-sv
   filesSVC ${_method} ${_param}
 elif [ "${_project:-}" = "renameSpec" ] || [ "${_project:-}" = "specUT" ]; then
   renameSpec ${_method} ${_param}
-elif [ "${_project:-}" = "adminUI" ] || [ "${_project:-}" = "admin" ] || [ "${_project:-}" = "citadel-control-panel" ]; then
+elif [ "${_project,,}" = "adminui" ] || [ "${_project:-}" = "admin" ] || [ "${_project:-}" = "citadel-control-panel" ]; then
   adminUI ${_method} ${_param}
-elif [ "${_project:-}" = "atlas-ui" ] || [ "${_project:-}" = "ui" ]; then
+elif [ "${_project:-}" = "atlas-ui" ] || [ "${_project,,}" = "atlasui" ]; then
   reloadAtlasUI ${_method} ${_param}
 elif [ "${_project:-}" = "createBucket" ] || [ "${_project:-}" = "bucket" ]; then
   createBucket ${_method} ${_param}
@@ -503,6 +548,10 @@ elif [ "${_project:-}" = "clean" ] || [ "${_project:-}" = "cleanAll" ]; then
   cleanAll ${_method} ${_param}
 elif [ "${_project:-}" = "operation" ] || [ "${_project:-}" = "removeOperation" ]; then
   removeOperation ${_method} ${_param}
+elif [ "${_project:-}" = "syncOperation" ] || [ "${_project:-}" = "syncOperation" ]; then
+  syncOperation ${_method} ${_param}
+elif [ "${_project:-}" = "docker" ] || [ "${_project:-}" = "syncDocker" ]; then
+  syncDockerRepo ${_method} ${_param}
 elif [ "${_project:-}" = "sandbox" ] || [ "${_project:-}" = "debugSB" ]; then
   debugSB ${_method} ${_param}
 elif [ "${_project:-}" = "log" ] || [ "${_project:-}" = "tailLog" ]; then
@@ -532,6 +581,28 @@ exit ${ret}
 # npm i webpack-cli webpack-bundle-analyzer  --save-dev
 
 
+# way to mimic out of disk space {
+
+# docker exec -it -u 0 atlas-files-0 sh -c "df -h && ls -AlpkFih /var/log/files-microservice && du -sh /var/log/files-microservice" && docker inspect atlas-files-0 |vim -
+
+# docker cp /media/sf_github/tmp.tar atlas-files-0:/var/log/files-microservice/
+
+# {{=<% %>=}}
+# Image: "atlas/files:{{& env.version}}"
+# ExposedPorts:
+#   9254/tcp: {}
+# HostConfig:
+#   Privileged: true
+#   NetworkMode: "{{& site.clusterName}}_vlan"
+#   RestartPolicy:
+#     Name: "no"
+#   PortBindings:
+#     9254/tcp:
+#       - HostPort: "9254"
+#   Binds:
+#     - "sized_vol:/var/log/files-microservice/"
+#}
+
 
 # scrollBar in atlas {
 #
@@ -551,4 +622,9 @@ exit ${ret}
 # baseDockerPath: /opt/github/Atlas/sourcecode/wispr-node-buildtools/build_docker_images/../sandbox/buildroot/git/master/base, DOCKER_REPO_NAME: docker
 # base: master, docker: master
 
+# docker cp  /opt/github/Atlas/sourcecode/wispr-node-buildtools/sandbox/buildroot/git/master/docker/operation/scripts/operation/performance.yml atlas-operation:/usr/local/src/scripts/operation/
+# vi /usr/local/src/scripts/operation/performance.yml
+
 # ssh -i ~/.ssh/mountain2.pem ubuntu@moutain02.atlahcl.com
+
+

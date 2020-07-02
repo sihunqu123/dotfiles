@@ -110,5 +110,14 @@ source $ZSH/oh-my-zsh.sh
 # source .config/git_ssh.sh
 source ~/.dotfiles/.config/shell.sh
 
+# keep behavior the same as bash
+# this is only needed for zsh
+my-backward-delete-word() {
+  local WORDCHARS="*?_-.[]~=/&;!#$%^(){}<>"
+    zle backward-kill-word
+  }
+zle -N my-backward-delete-word
+bindkey '^W' my-backward-delete-word
+
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
