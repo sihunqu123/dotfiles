@@ -213,7 +213,7 @@ function reloadAPI-gateway {
   local -r containerName="atlas-doad-0"
 
   local -r isBrk=${2}
-  local -r inspectVal="inspect"
+  local inspectVal="inspect"
 
   if [ "${isBrk:-}" = "true" ] || [ "${isBrk:-}" = "1" ]; then
     inspectVal="inspect-brk"
@@ -404,35 +404,35 @@ function adminUI {
     echo -e -n "Succeed in syncing remote files to local ${tmpPath}!"
   else # to sync and restart
     echo "about to reload debug "
-#   set -x
+    set -x
 
     # first cp the build result template from container to .tmp
-#   cp -fRpv ${tmp_linux_project_path_admin}/{app,index.html} ${linux_project_path}/.tmp/
-#   mkdir -p ${linux_project_path}/.tmp/assets
-#   # then continue to sync some resources from container to .tmp/assets
-#   cp -fRpv ${tmp_linux_project_path_admin}/assets/{fonts,libs} ${linux_project_path}/.tmp/assets/
-#   # then sync some resources from local src
-#   cp -fRpv ${linux_project_path}/src/app/i18n ${linux_project_path}/.tmp/app/
-#   cp -fRpv ${linux_project_path}/src/assets/{env.js,theme.js,theme.scss}  ${linux_project_path}/.tmp/assets/
+    cp -fRpv ${tmp_linux_project_path_admin}/{app,index.html} ${linux_project_path}/.tmp/
+    mkdir -p ${linux_project_path}/.tmp/assets
+    # then continue to sync some resources from container to .tmp/assets
+    cp -fRpv ${tmp_linux_project_path_admin}/assets/{fonts,libs} ${linux_project_path}/.tmp/assets/
+    # then sync some resources from local src
+    cp -fRpv ${linux_project_path}/src/app/i18n ${linux_project_path}/.tmp/app/
+    cp -fRpv ${linux_project_path}/src/assets/{env.js,theme.js,theme.scss}  ${linux_project_path}/.tmp/assets/
     
     # generate some default cobrand configs
 #   local.atlas.com.cobrand
  
     
-    for fileFullPath in ${linux_project_path}/.tmp/assets/{env.js,theme.scss,theme.js}; do
-      echo "filePullPath: ${fileFullPath}"
-       
-    done
+#   for fileFullPath in ${linux_project_path}/.tmp/assets/{env.js,theme.scss,theme.js}; do
+#     echo "filePullPath: ${fileFullPath}"
+#      
+#   done
 
-#   cp -fRpv ${linux_project_path}/.tmp/assets/env.js ${linux_project_path}/.tmp/assets/local.atlas.com.cobrand.env.js
-#   cp -fRpv ${linux_project_path}/.tmp/assets/theme.scss ${linux_project_path}/.tmp/assets/local.atlas.com.cobrand.theme.css
-#   cp -fRpv ${linux_project_path}/.tmp/assets/theme.js ${linux_project_path}/.tmp/assets/local.atlas.com.cobrand.theme.js
-#   cp -fRpv ${linux_project_path}/.tmp/assets/env.js ${linux_project_path}/.tmp/assets/local.atlas.com.cobrand.env.js
+    cp -fRpv ${linux_project_path}/.tmp/assets/env.js ${linux_project_path}/.tmp/assets/local.atlas.com.cobrand.env.js
+    cp -fRpv ${linux_project_path}/.tmp/assets/theme.scss ${linux_project_path}/.tmp/assets/local.atlas.com.cobrand.theme.css
+    cp -fRpv ${linux_project_path}/.tmp/assets/theme.js ${linux_project_path}/.tmp/assets/local.atlas.com.cobrand.theme.js
+    cp -fRpv ${linux_project_path}/.tmp/assets/env.js ${linux_project_path}/.tmp/assets/local.atlas.com.cobrand.env.js
 
-#   # remove remote old files
-#   docker exec -it atlas-uiui-0 rm -rfv ${container_project_path}/admin
-#   # copy local new files to remote
-#   docker cp ${linux_project_path}/.tmp/ ${containerName}:${container_project_path}/admin
+    # remote old files
+    docker exec -it atlas-uiui-0 rm -rfv ${container_project_path}/admin
+    # copy local new files to remote
+    docker cp ${linux_project_path}/.tmp/ ${containerName}:${container_project_path}/admin
   fi
 }
 
@@ -522,6 +522,26 @@ function debugSB {
   )
 }
 
+function collectLog {
+  local -r method=${1}
+  local -r output_file="${host_githubPath}/logs/all.txt"
+
+
+  if [ "${method:-}" = "collect" ]; then # to rename to tiantcbak
+    echo "" > ${output_file}
+    echo "ssl:" >> ${output_file} 
+    docker exec -it -u 0 atlas-ssl-0 cat /var/log/nginx/access.log >> ${output_file}  
+    echo "doad:" >> ${output_file} 
+    docker exec -it -u 0 atlas-doad-0 cat /var/log/api-gateway/api-gateway.log >> ${output_file}  
+    echo "files:" >> ${output_file} 
+    docker exec -it -u 0 atlas-files-0 cat /var/log/files-microservice/files-microservice.log >> ${output_file}  
+  else # to clear
+    docker exec -it -u 0 atlas-ssl-0 sh -c 'echo "" > /var/log/nginx/access.log'
+    docker exec -it -u 0 atlas-doad-0 sh -c 'echo "" > /var/log/api-gateway/api-gateway.log'
+    docker exec -it -u 0 atlas-files-0 sh -c 'echo "" > /var/log/files-microservice/files-microservice.log'
+  fi
+}
+
 # tail logs in container
 function tailLog {
   # docker exec -it atlas-doad-0 tail -f /var/log/api-gateway/api-gateway.log
@@ -554,6 +574,8 @@ elif [ "${_project:-}" = "docker" ] || [ "${_project:-}" = "syncDocker" ]; then
   syncDockerRepo ${_method} ${_param}
 elif [ "${_project:-}" = "sandbox" ] || [ "${_project:-}" = "debugSB" ]; then
   debugSB ${_method} ${_param}
+elif [ "${_project:-}" = "collectLog" ] || [ "${_project:-}" = "collect" ]; then
+  collectLog ${_method} ${_param}
 elif [ "${_project:-}" = "log" ] || [ "${_project:-}" = "tailLog" ]; then
   tailLog ${_method} ${_param}
 else 

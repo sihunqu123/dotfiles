@@ -102,6 +102,11 @@ Plugin 'Valloric/YouCompleteMe'
 Plugin 'itchyny/lightline.vim'
 
 " Plugin to Adds file type icons to Vim plugins such as: NERDTree, vim-airline, CtrlP, unite, Denite, lightline, vim-startify and many more
+"   to make this plugin works, pls download `Inconsolata Nerd Font Monoa` from
+"     https://github.com/ryanoasis/nerd-fonts/tree/master/patched-fonts/Inconsolata/complete
+"     or `DejaVu Sans Mono Nerd Font Complete Mono.ttf` is better
+"     https://github.com/ryanoasis/nerd-fonts/tree/master/patched-fonts/DejaVuSansMono/Regular/complete
+"   and put add it to your font. e.g. for windows, copy it into `C:\Windows\Fonts`
 Plugin 'ryanoasis/vim-devicons'
 
 " Plugin for javascript and typescript(tsx).
@@ -429,9 +434,9 @@ set noshowmode
 nmap <silent> <Leader>r :NERDTreeFind<cr>
 nmap <silent> <Leader>g :NERDTreeToggle<cr>
 
-" for centos7
-let g:NERDTreeDirArrowExpandable = '＞'
-let g:NERDTreeDirArrowCollapsible = '﹀'
+" for windows
+"let g:NERDTreeDirArrowExpandable = '＞'
+"let g:NERDTreeDirArrowCollapsible = '﹀'
 
 " requires 'wincent/command-t'
 let g:CommandTWildIgnore=&wildignore . ",*/node_modules"
@@ -489,6 +494,16 @@ let g:aaa="value of aaa"
 "}
 
 
+
+" required by vim-devicons{
+" for windows client
+set guifont=Inconsolata_Nerd_Font_Mono:h11
+" for linux client
+"set guifont=Inconsolata_Nerd_Font_Mono\ 11
+let g:webdevicons_enable_nerdtree = 1
+" whether or not to show the nerdtree brackets around flags
+let g:webdevicons_conceal_nerdtree_brackets = 1
+"}
 
 
 
@@ -645,7 +660,7 @@ inoremap <C-]> <Esc><Right>
 " use this to grep only specific file type. (when --exclude used, --include will be ignored)
 " --include="*.js"
 " --include=\*.{py,pl,sh}
-nmap <Leader>h :grep -n -r --exclude-dir="node_modules" --exclude-dir="mochawesome-report" --exclude-dir="domino-iam-service" --exclude-dir="build" --exclude-dir="logs" --exclude-dir="website/node_modules" --exclude-dir="dist" --exclude-dir=".tmp" --exclude-dir="coverage" --exclude="*.swp" --exclude="*.orig" -i  ./<Left><Left><Left>
+nmap <Leader>h :grep -n -r --exclude-dir="node_modules" --exclude-dir="mochawesome-report" --exclude-dir="domino-iam-service" --exclude-dir="build" --exclude-dir="logs" --exclude-dir="website/node_modules" --exclude-dir="dist" --exclude-dir=".nyc_output" --exclude-dir=".tmp" --exclude-dir="coverage" --exclude="*.swp" --exclude="*.orig" -i  ./<Left><Left><Left>
 
 " to avoid Arrow Key not works in Vim.
 "set term=ansi
