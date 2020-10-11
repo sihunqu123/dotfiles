@@ -14,6 +14,9 @@ export CLICOLOR=1
 export LSCOLORS=ExFxBxDxCxegedabagacad
 
 
+# PATH=$HOME/.local/bin:$PATH:$HOME/bin:$HOME/go/bin
+
+
 # bind Space:magic-space
 # 
 # . ~/.dotfiles/.config/shell.sh

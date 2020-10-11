@@ -74,6 +74,8 @@ Plugin 'kshenoy/vim-signature'
 Plugin 'scrooloose/nerdtree'
 
 " Plugin for multiple-nodes operations in nerdtree
+" PS: Only work with vim opened via `vim {filename}`
+"     and will NOT work for vim opened via `vim .`
 " t Open selected files in tabs.
 " dd  Delete selected files from disk. If open in Vim, they remain open.
 " m Move the selected files to another directory. If open in Vim, the buffer will points to its old location.
@@ -238,6 +240,11 @@ set list lcs=tab:»·
 " Open new split panes to right and bottom, which feels more natural than Vim's default
 set splitbelow
 set splitright
+" prevent flashing screen, which is bad for eyes. {
+"set novisualbell
+set visualbell
+set t_vb=
+"}
 
 " need to check if it's macos then set the colo
 colorscheme molokai
@@ -246,13 +253,13 @@ colorscheme molokai
 " colo desert
 
 
-"""""""""""""""""""""""""""""" Trailing space
+"""""""""""""""""""""""""""""" Trailing space{
 highlight ExtraWhitespace ctermbg=red guibg=red
 autocmd ColorScheme * highlight ExtraWhitespace ctermbg=red guibg=red
 match ExtraWhitespace /\s\+$/
 " to remove trailing space
 nmap <Leader>c :%s/\s\+$//g
-
+"}
 
 " Status Line {
 " set laststatus=2                             " always show statusbar
@@ -407,6 +414,8 @@ highlight DiffChange cterm=bold ctermfg=10 ctermbg=17 gui=none guifg=bg guibg=Re
 highlight DiffText   cterm=bold ctermfg=10 ctermbg=88 gui=none guifg=bg guibg=Red
 
 
+" highlight the current confirming replacing word.
+highlight IncSearch guibg=green ctermbg=green term=underline
 
 " adjust vim prompt menu's color if it's not clear enough
 autocmd ColorScheme * highlight Pmenu ctermbg=white
@@ -603,8 +612,8 @@ let Tlist_Exit_OnlyWindow=1
 """""""""""""""""""""""""""""""
 " Heavy Customiztion
 """""""""""""""""""""""""""""""
-" highlight selected text
-vnoremap // y/\V<C-r>=escape(@",'/\')<CR><CR>
+" highlight selected text; // now we use `space space` to to this instad.
+"vnoremap // y/\V<C-r>=escape(@",'/\')<CR><CR>
 
 " hightlight current word without jumping to next match
 nnoremap <silent> <Space><Space> "zyiw:let @/ = '\<' . @z . '\>'<CR>:set hlsearch<CR>

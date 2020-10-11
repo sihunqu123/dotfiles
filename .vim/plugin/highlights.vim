@@ -12,7 +12,7 @@
 "   2 for highlight hl2, 3 for highlight hl3, etc
 "     (can press 1 to 9 on keypad for highlights hl1 to hl9)
 "   0 to remove highlight from current word
-"   - to remove all highlights in current window
+"   - to remove all highlights in current window !!!!!!!!!!!!!!!!!
 "   + to restore highlights cleared with '-' in current window
 "   * to restore highlights (possibly from another window)
 " Can press 1 or 2 on main keyboard before keypad 1..9 for more highlights.
