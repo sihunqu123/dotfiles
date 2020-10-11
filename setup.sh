@@ -1,9 +1,9 @@
-# .bashrc
 
 echo "setup begin"
 home=`cd ~ && pwd`
 
 
+# .bashrc
 # const
 bakDir="${home}/bakDir"
 dotDir="${home}/.dotfiles"
@@ -40,13 +40,14 @@ else
 fi
 
 # return -1 if not found
-function lastIndexOf() {
+function lastIndexOf {
   echo "$1" | ${GREP_CLI} -b -o "$2" | awk 'BEGIN {FS=":";RET=-1}{RET=$1} END {print RET}'
 }
+
 # ret=$(lastIndexOf "a/bcb/de" "/")
 # echo "last index: ${ret}" # output: 5
 
-if [ ! -e "${home}/.bashrc" ]; then
+if [ -e "${home}/.vim/bundle/Vundle.vim" ]; then
   echo "seems vundle is already installed"
 else
   echo "vundle not installed yet, will install it first"
