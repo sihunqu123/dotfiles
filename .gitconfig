@@ -56,3 +56,5 @@
 [log]
 	date = default
 
+[https]
+	sslVerify = false
