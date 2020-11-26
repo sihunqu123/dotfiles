@@ -43,6 +43,8 @@ fi
 function lastIndexOf {
   echo "$1" | ${GREP_CLI} -b -o "$2" | awk 'BEGIN {FS=":";RET=-1}{RET=$1} END {print RET}'
 }
+# ret=$(lastIndexOf "a/bcb/de" "/")
+# echo "last index: ${ret}" # output: 5
 
 # ret=$(lastIndexOf "a/bcb/de" "/")
 # echo "last index: ${ret}" # output: 5
@@ -140,7 +142,6 @@ function exitIfError {
     exit 1
   fi
 }
-
 # echo "Setup vim-sensible plugin start..."
 # cd ~/.vim/bundle && \
 #   git clone https://github.com/tpope/vim-sensible.git
