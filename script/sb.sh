@@ -96,17 +96,34 @@ declare -r __root="$(cd "$(dirname "${__dir}")" && pwd)" # <-- change this as it
 
 declare -r githubPath="/opt/github/Atlas/sourcecode"
 declare -r tmpPath="${githubPath}/tmp"
-declare -r host_githubPath="/media/sf_github"  # change to a path with enough ACL if u r are Mac user.
-declare -r host_side_githubPath="/d/github" # change to a path with enough ACL if u r are Mac user.
+host_githubPath=${HOST_GITHUBPATH:-/media/sf_github}  # change to a path with enough ACL if u r are Mac user.
+host_side_githubPath=${HOST_SIDE_GITHUBPATH:-/d/github}  # change to a path with enough ACL if u r are Mac user.
 declare -r nodeCommonUtilsPath="${githubPath}/node-common-utils"
+declare -r nodeRestClientPath="${githubPath}/node-rest-client"
 declare -r nodeCommonUtilsLibPath="node_modules/@atlas/node-common-utils"
+declare -r nodeRestClientLibPath="node_modules/@atlas/node-rest-client"
 # the namespace for kubectl cluster
 # declare -r namespace_default=default
 namespace_default=${CONTAINER_NAMESPACE:-default}
 CONTAINER_INDEX=${CONTAINER_INDEX:-0}
+domain_default=${CLUSTER_DOMAIN:-k3d.atlashcl.com}
+RUN_IN_BACKGROUND=${RUN_IN_BACKGROUND:false}
 
 declare -r minioUser=minioadmin
 declare -r minioPwd="miniopassword"
+
+declare -A projectNameMap=(
+  ["api"]="api-gateway atlas-api-gateway-"
+  ["files"]="files-microservice atlas-files-"
+  ["batch"]="batch-microservice atlas-batch-"
+  ["worker"]="worker-microservice atlas-worker-"
+  ["atlas-ui"]="atlas-ui atlas-uiui-"
+)
+# echo "${projectNameMap[api]}"
+# pArr=(${projectNameMap[api]})
+# # declare -p  pArr
+# project_name=${pArr[0]}
+# podName=${pArr[1]}
 
 declare -r arg1="${1:-}"
 declare -r arg2="${2:-}"
@@ -143,6 +160,7 @@ function reloadAtlasUI {
   local -r project_name="atlas-ui"
   local -r linux_project_path="${githubPath}/${project_name}"
   local -r container_project_path=/usr/local/site/${project_name}
+  local -r container_project_path2=/usr/local/site/atlas-file-download-ui
   local -r containerName="atlas-uiui-${CONTAINER_INDEX}"
 
   if [ -e ${linux_project_path}/dist/ ]; then
@@ -151,12 +169,16 @@ function reloadAtlasUI {
     echo "Error: ${linux_project_path}/dist/ doesn't exists!!! Pls make sure generating build result in this folder."
     exit 2
   fi
-  ls  -A1t  ${linux_project_path}/dist/*.hot-update.* |tail -n +4 | xargs -I % -L 1 rm -rfv %
+  ls  -A1t  ${linux_project_path}/dist/app/*.hot-update.* |tail -n +4 | xargs -I % -L 1 rm -rfv % && true
+  ls  -A1t  ${linux_project_path}/dist/public/*.hot-update.* |tail -n +4 | xargs -I % -L 1 rm -rfv % && true 
   # docker exec -it ${containerName} sh -c 'rm -rfv ${container_project_path}/*.hot-update.*'
   kubectl exec -it -n ${namespace_default} ${containerName} -- sh -c 'rm -rfv ${container_project_path}/*.hot-update.*'
-  cp -fRpv ${linux_project_path}/{public/locales,dist/}
+  kubectl exec -it -n ${namespace_default} ${containerName} -- sh -c 'rm -rfv ${container_project_path2}/*.hot-update.*'
+  cp -fRp ${linux_project_path}/{public/locales,dist/app/}
+  cp -fRp ${linux_project_path}/{public/locales,dist/public/}
   # find ${linux_project_path}/dist/ -maxdepth 1 -mindepth 1 -print |_grep -v "\.swp" |xargs -L 1 -I % docker cp % ${containerName}:${container_project_path}/
-  find ${linux_project_path}/dist/ -maxdepth 1 -mindepth 1 -print |_grep -v "\.swp" |xargs -L 1 -I % kubectl cp % ${namespace_default}/${containerName}:${container_project_path}/
+  find ${linux_project_path}/dist/app -maxdepth 1 -mindepth 1 -print | _grep -v "\.swp" |xargs -L 1 -I % kubectl cp % ${namespace_default}/${containerName}:${container_project_path}/ &
+  find ${linux_project_path}/dist/public -maxdepth 1 -mindepth 1 -print | _grep -v "\.swp" |xargs -L 1 -I % kubectl cp % ${namespace_default}/${containerName}:${container_project_path2}/ &
 }
 
 #
@@ -426,17 +448,20 @@ function reloadMicroSVC {
     if [ "${isBrk:-}" = "true" ] || [ "${isBrk:-}" = "1" ]; then
       inspectVal="inspect-brk"
     fi
+    set -v
+    set -o xtrace
 
     echo "about to reload debug "
 
+
     # first stop project in container to avoid "failed to delete"
     kubectl exec -it -n ${namespace_default} ${containerName} -- svc -d /service/${project_name}
-  
+
     for item in "${pathsToMove[@]}"; do
       cp -fRpv "${linux_project_path}/${item}" "${host_project_path}/"
       kubectl cp "${linux_project_path}/${item}" ${namespace_default}/${containerName}:"${container_project_path}/"
     done;
-  
+
     # sync node-common-utils
     if [ "${isSyncNodeCommonUtils:-}" = "true" ] || [ "${isSyncNodeCommonUtils:-}" = "1" ]; then
       find ${nodeCommonUtilsPath}/ -mindepth 1 -maxdepth 1 |_grep -P "(\/lib|src|.json)$" |xargs -L 1 -I % sh -c "
@@ -444,33 +469,98 @@ function reloadMicroSVC {
         mkdir -p ${host_project_path}/${nodeCommonUtilsLibPath}/ && cp -fRpv % ${host_project_path}/${nodeCommonUtilsLibPath}/ &&
         kubectl cp % ${namespace_default}/${containerName}:${container_project_path}/${nodeCommonUtilsLibPath}/
       "
+      find ${nodeRestClientPath}/ -mindepth 1 -maxdepth 1 |_grep -P "(\/lib|src|.json)$" |xargs -L 1 -I % sh -c "
+        mkdir -p ${linux_project_path}/${nodeRestClientLibPath}/ && cp -fRpv % ${linux_project_path}/${nodeRestClientLibPath}/ &&
+        mkdir -p ${host_project_path}/${nodeRestClientLibPath}/ && cp -fRpv % ${host_project_path}/${nodeRestClientLibPath}/ &&
+        kubectl cp % ${namespace_default}/${containerName}:${container_project_path}/${nodeRestClientLibPath}/
+      "
     fi
 
-    local -r libPaths=(
-      "@atlas/js-logger"
-      "bunyan"
-    )
+##  local libPaths=''
+##  libPaths=(
+##    "@atlas/js-logger"
+##    "bunyan"
+##  )
 
-    for item in "${libPaths[@]}"; do
-      libPath="node_modules/${item}"
-      mkdir -p ${linux_project_path}/${libPath}/ && 
-      mkdir -p ${host_project_path}/${libPath}/ && cp -fRpv ${linux_project_path}/${libPath}/* ${host_project_path}/${libPath}/
-      parentPath=$(echo ${container_project_path}/${libPath} | grep -oP ".*\/(?=[^/]+)") 
-      kubectl cp ${linux_project_path}/${libPath} ${namespace_default}/${containerName}:${parentPath}
-    done;
-    
+
+    if [ "${project_key:-}" != "api-gateway" ] && [ "${libPaths:-}" != "" ]; then
+      for item in "${libPaths[@]}"; do
+        libPath="node_modules/${item}"
+        mkdir -p ${linux_project_path}/${libPath}/ &&
+        mkdir -p ${host_project_path}/${libPath}/ && cp -fRpv ${linux_project_path}/${libPath}/* ${host_project_path}/${libPath}/
+        parentPath=$(echo ${container_project_path}/${libPath} | grep -oP ".*\/(?=[^/]+)")
+        kubectl cp ${linux_project_path}/${libPath} ${namespace_default}/${containerName}:${parentPath}
+      done;
+    fi
+
     # start project in container
     ## use the deadloop echo to prevent disconnected by the loadbalancer
-    kubectl exec -it -n ${namespace_default} ${containerName} -- bash -c "source /etc/profile
-      cd ${container_project_path}/ && \
-      export NODE_ENV=production && \
-      svc -d /service/${project_name}/ && \
-      node . &
-      while :; do sleep 59; echo -n ' ' >&2; done &
-      sleep 3
-      tail -f /var/log/${project_name}/${project_name}.log
-    "
+
+    # the always false statement `if(false && ...)`
+    if (( 8 == 2 )) && [ "${project_key:-}" = "worker" ] || [ "${project_key:-}" = "worker-microservice" ]; then
+      kubectl exec -it -n ${namespace} ${containerName} -- bash -c "source /etc/profile
+        cd ${container_project_path}/ && \
+        export NODE_ENV=production && \
+        svc -d /service/${project_name}/ && \
+        chown -R mdrop:mdrop ./ && \
+        chown -R mdrop:mdrop /var/log/${project_name} && \
+        setuidgid mdrop /usr/local/site/nodejs/bin/0x .
+      "
+      exit 0
+    fi
+
+    if [ "${RUN_IN_BACKGROUND:-}" = "true" ]; then
+      kubectl exec -it -n ${namespace_default} ${containerName} -- bash -c "source /etc/profile
+        cd ${container_project_path}/ && \
+        export NODE_ENV=production && \
+        svc -d /service/${project_name}/ && \
+        echo '' > /var/log/${project_name}/${project_name}.log && \
+        chown -R mdrop:mdrop ./ && \
+        chown -R mdrop:mdrop /var/log/${project_name} && \
+        svc -du /service/${project_name}/
+      "
+    else
+      kubectl exec -it -n ${namespace_default} ${containerName} -- bash -c "source /etc/profile
+        cd ${container_project_path}/ && \
+        export NODE_ENV=production && \
+        svc -d /service/${project_name}/ && \
+        echo '' > /var/log/${project_name}/${project_name}.log && \
+        chown -R mdrop:mdrop ./ && \
+        chown -R mdrop:mdrop /var/log/${project_name} && \
+        setuidgid mdrop node --${inspectVal}=0.0.0.0:9229 . &
+        while :; do sleep 59; echo -n ' ' >&2; done &
+        sleep 9
+        tail -f /var/log/${project_name}/${project_name}.log
+      "
+    fi
+
   fi
+}
+
+function chown4Mdrop {
+  local -r arr=(
+    'api'
+    'files'
+    'batch'
+    'worker'
+  );
+  
+  for item in "${arr[@]}"; do
+    pArr=(${projectNameMap[$item]})
+    declare -p  pArr
+    project_name=${pArr[0]}
+    podNamePrefix=${pArr[1]}
+    echo "chown ${project_name} in ${podNamePrefix}"
+    #echo "kubectl cp ${linux_project_path}/${item} ${namespace_default}/${containerName}:${container_project_path}/"
+    (
+      IFS=$'\n'; for row in $(kubectl get pods -o wide --namespace=${namespace_default}  |grep "${podNamePrefix}\d+"); do
+        podName=$(echo ${row} |awk '{print $1}');
+        container_project_path="/usr/local/site/${project_name}"
+        echo ${podName} for project_name: ${project_name};
+        kubectl exec -n ${namespace_default} ${podName} -- sh -c "chown -R mdrop:mdrop /var/log/${project_name} ${container_project_path}"
+      done
+    )
+  done;
 }
 
 #
@@ -615,6 +705,7 @@ function cleanAll {
 # @param 1: the method to do
 #
 # # to sync AdminUI production
+# # pls ensure that u r running `npm run serve` in the root folder of citadel-control-panel
 # find /opt/github/Atlas/sourcecode/citadel-control-panel/dist/admin -mindepth 0 -maxdepth 1  -type f  |egrep "*\.(map|js|html)$" |xargs -L 1 -I % docker cp % atlas-uiui-0:/usr/local/site/citadel-control-panel/admin/
 function adminUI {
   local -r project_name="citadel-control-panel"
@@ -658,15 +749,20 @@ function adminUI {
 #
 #   done
 
-    cp -fRpv ${linux_project_path}/.tmp/assets/env.js ${linux_project_path}/.tmp/assets/local.atlas.com.cobrand.env.js
-    cp -fRpv ${linux_project_path}/.tmp/assets/theme.scss ${linux_project_path}/.tmp/assets/local.atlas.com.cobrand.theme.css
-    cp -fRpv ${linux_project_path}/.tmp/assets/theme.js ${linux_project_path}/.tmp/assets/local.atlas.com.cobrand.theme.js
-    cp -fRpv ${linux_project_path}/.tmp/assets/env.js ${linux_project_path}/.tmp/assets/local.atlas.com.cobrand.env.js
+    ## local -r cobrandStr="local.atlas.com.cobrand"
+    local -r cobrandStr="k3d.atlashcl.com.cobrand"
+
+    cp -fRpv ${linux_project_path}/.tmp/assets/env.js ${linux_project_path}/.tmp/assets/${cobrandStr}.env.js
+    cp -fRpv ${linux_project_path}/.tmp/assets/theme.scss ${linux_project_path}/.tmp/assets/${cobrandStr}.theme.css
+    cp -fRpv ${linux_project_path}/.tmp/assets/theme.js ${linux_project_path}/.tmp/assets/${cobrandStr}.theme.js
+    cp -fRpv ${linux_project_path}/.tmp/assets/env.js ${linux_project_path}/.tmp/assets/${cobrandStr}.env.js
 
     # remote old files
-    docker exec -it atlas-uiui-0 rm -rfv ${container_project_path}/admin
+    # docker exec -it atlas-uiui-0 rm -rfv ${container_project_path}/admin
+    kubectl exec -n ${namespace_default} -it atlas-uiui-0 -- rm -rfv ${container_project_path}/admin
     # copy local new files to remote
-    docker cp ${linux_project_path}/.tmp/ ${containerName}:${container_project_path}/admin
+    # docker cp ${linux_project_path}/.tmp/ ${containerName}:${container_project_path}/admin
+    kubectl cp ${linux_project_path}/.tmp/ ${namespace_default}/${containerName}:${container_project_path}/admin
   fi
 }
 
@@ -787,6 +883,153 @@ function collectLog {
   fi
 }
 
+# upload the mariadb jar file to setup pod
+function doSetup {
+  local -i COUNT=0
+  local -ri limit=50
+  local rows=""
+  set +o errexit
+  # set -o pipefail
+  while [[ ${rows-} == "" ]]; do
+    echo "check if atlas-setup pod is ready..."
+    COUNT=COUNT+1
+    rows=$(kubectl get pods -n ${namespace_default} |grep atlas-setup |grep '1/1');
+    echo "rows: ${rows}"
+
+    if [ "${rows:-}" = "" ] && (( COUNT >= limit )); then
+      echo "Error: atlas-setup is not ready yet, while maximum retry times exceeded. Exiting..."
+      IFS=$'\n'; for row in $(kubectl get pods -n ${namespace_default} |grep atlas-setup); do
+        podName=$(echo ${row} |awk '{print $1}')
+        echo -en "\n==========describe of pod: ${podName}==========="
+        kubectl describe -n ${namespace_default} "pod/${podName}"
+      done
+      exit 1;
+    else
+      sleep 5;
+    fi
+  done 
+
+  set +o errexit
+
+  sleep 20
+  echo "atlas-setup pod is ready, uploading jar file..."
+
+  function uploadJar {
+    curl -i 'http://setup.atlas.com/api/uploads' \
+      -H 'Connection: keep-alive' \
+      -H 'Pragma: no-cache' \
+      -H 'Cache-Control: no-cache' \
+      -H 'Accept: application/json, text/plain, */*' \
+      -H 'Content-Type: application/json;charset=UTF-8' \
+      -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36' \
+      -H 'crossorigin: true' \
+      -H 'Origin: http://setup.atlas.com' \
+      -H 'Referer: http://setup.atlas.com/' \
+      -H 'Accept-Language: en-US,en;q=0.9,zh;q=0.8,zh-CN;q=0.7,zh-TW;q=0.6' \
+      --data-binary "@/home/tiantc/script/mariadb.json" \
+      --compressed \
+      --insecure
+    }
+  IFS=$'\n'; for row in ${rows}; do
+    uploadJar
+    retStatus=$?
+    if (( retStatus != 0 )); then
+      uploadJar
+    fi
+  done
+}
+
+# update the atlas images in k3s
+function updateK3sAtlas {
+  dockerPath="/opt/github/Atlas/sourcecode/wispr-node-buildtools/sandbox/buildroot/git/master/docker"
+  helm uninstall atlas && true
+  local -i COUNT=0
+  local -ri limit=5
+  local -i podLeftCount=2
+  set -o pipefail
+  while (( ${podLeftCount-} != 1 )); do
+    if (( COUNT >= limit )); then
+      echo "Error: some pods is not removed yet, while maximum retry times exceeded. Exiting..."
+      kubectl get pods -n ${namespace_default} 
+    fi
+    echo "waiting for all pods terminated..."
+    sleep 20
+    rows=$(kubectl get pods -n ${namespace_default} | tee /dev/tty)
+#   refer: 
+#   https://superuser.com/questions/543235/how-to-redirect-multiple-bash-commands-to-a-variable-and-screen
+    podLeftCount=$(echo ${rows} |wc -l)
+    kubectl get rc,statefulsets,svc,deployment,pods,pvc,cronjob,job -A --show-kind --show-labels  |grep persistentvolumeclaim |awk '{print $2;}' |xargs -L 1 -I % kubectl delete % && true
+  done
+
+  array=(\
+     pv \
+  ); for resourceType in "${array[@]}"; do kubectl get -n "${namespace_default}" "${resourceType}" -o wide | awk '{if(NR>1) print $1;}' |xargs -L 1 -I %  kubectl delete -n "${namespace_default}" ${resourceType}/%; done
+  
+  echo "all pods deleted"
+  kubectl get svc,statefulset,pods -n ${namespace_default} 
+ 
+  # TODO: should use `-n ${namespace_default}` instead of `-A`?
+  kubectl get rc,statefulsets,svc,deployment,pods,pvc,cronjob,job -A --show-kind --show-labels  |grep persistentvolumeclaim |awk '{print $2;}' |xargs -L 1 -I % kubectl delete % && true 
+  sleep 5
+  set +o pipefail
+  cd ${dockerPath}/helm/k3d-data
+  # /opt/github/Atlas/sourcecode/wispr-node-buildtools/sandbox/buildroot/git/master/docker/helm/k3d-data/values.yaml
+  # TODO: replace the ftpserver: false to true
+  cd ${dockerPath}/helm
+  echo "install k3d secret..."
+  kubectl apply -f k3d-data/atlas-k3d-secret.yml
+  echo "install atlas via helm..."
+  helm install atlas ./atlas -f k3d-data/values.yaml
+  echo "do Setup..."
+  doSetup
+}
+
+# update the atlas images in k3d
+function updateK3dAtlas {
+  dockerPath="/opt/github/Atlas/sourcecode/wispr-node-buildtools/sandbox/buildroot/git/master/docker"
+  helm uninstall atlas && true
+  local -i COUNT=0
+  local -ri limit=5
+  local -i podLeftCount=2
+  set -o pipefail
+  while (( ${podLeftCount-} != 1 )); do
+    if (( COUNT >= limit )); then
+      echo "Error: some pods is not removed yet, while maximum retry times exceeded. Exiting..."
+      kubectl get pods -n ${namespace_default} 
+    fi
+    echo "waiting for all pods terminated..."
+    sleep 20
+    rows=$(kubectl get pods -n ${namespace_default} | tee /dev/tty)
+#   refer: 
+#   https://superuser.com/questions/543235/how-to-redirect-multiple-bash-commands-to-a-variable-and-screen
+    podLeftCount=$(echo ${rows} |wc -l)
+    kubectl get rc,statefulsets,svc,deployment,pods,pvc,cronjob,job -A --show-kind --show-labels  |grep persistentvolumeclaim |awk '{print $2;}' |xargs -L 1 -I % kubectl delete % && true
+  done
+
+  array=(\
+     pv \
+  ); for resourceType in "${array[@]}"; do kubectl get -n "${namespace_default}" "${resourceType}" -o wide | awk '{if(NR>1) print $1;}' |xargs -L 1 -I %  kubectl delete -n "${namespace_default}" ${resourceType}/%; done
+  
+  echo "all pods deleted"
+  kubectl get svc,statefulset,pods -n ${namespace_default} 
+ 
+  # TODO: should use `-n ${namespace_default}` instead of `-A`?
+  kubectl get rc,statefulsets,svc,deployment,pods,pvc,cronjob,job -A --show-kind --show-labels  |grep persistentvolumeclaim |awk '{print $2;}' |xargs -L 1 -I % kubectl delete % && true 
+  sleep 5
+  set +o pipefail
+  docker network disconnect k3d-atlas registry.local
+  docker network connect k3d-atlas registry.local
+  sleep 1
+  cd ${dockerPath}/helm/k3d-data
+  ./push-images.sh base
+  cd ${dockerPath}/helm
+  # /opt/github/Atlas/sourcecode/wispr-node-buildtools/sandbox/buildroot/git/master/docker/helm/k3d-data/values.yaml
+  # TODO: replace the ftpserver: false to true
+  kubectl apply -f k3d-data/atlas-k3d-secret.yml
+  helm install atlas ./atlas -f k3d-data/values.yaml
+  doSetup
+}
+
 # tail logs in container
 function initK3d {
   kubectl exec -it -n ${namespace_default} atlas-api-gateway-0 -- sed -i 's/CORS_ALLOW_ALL: false/CORS_ALLOW_ALL: true/g' /usr/local/site/api-gateway/config/production.yml
@@ -799,22 +1042,25 @@ syncSchedule: '*/10 * * * * *'" /usr/local/site/ldapsync-microservice/config/pro
 }
 
 
+# describePod[debugPod]
+function describePod {
+ IFS=$'\n'; for row in $(kubectl get pods -A |awk '{if($1 != "NAMESPACE" && $4 != "Running" && $4 != "Completed") print $0;}'); do namespace=$(echo ${row} |awk '{print $1}'); name=$(echo ${row} |awk '{print $2}'); podStatus=$(echo ${row} |awk '{print $4}'); echo "\n\n"; echo illPod- ${namespace}, ${name}, ${podStatus}; kubectl describe -n ${namespace} pod/${name} --show-events=true; done 2>&1 > log.txt
+}
+
 function login {
-  curl 'https://api.k3d.atlashcl.com/api/authentication/login' \
-    -H 'authority: api.k3d.atlashcl.com' \
+  curl -k "https://api.${domain_default}/api/authentication/login" \
+    -H "authority: api.${domain_default}" \
     -H 'pragma: no-cache' \
     -H 'cache-control: no-cache' \
     -H 'accept: application/json, text/plain, */*' \
     -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36' \
     -H 'crossorigin: true' \
     -H 'content-type: application/json;charset=UTF-8' \
-    -H 'origin: http://email.k3d.atlashcl.com' \
     -H 'sec-fetch-site: cross-site' \
     -H 'sec-fetch-mode: cors' \
     -H 'sec-fetch-dest: empty' \
-    -H 'referer: http://email.k3d.atlashcl.com/auth/' \
     -H 'accept-language: en-US,en;q=0.9,zh;q=0.8,zh-CN;q=0.7,zh-TW;q=0.6' \
-    --data-binary '{"username":"bpadmin@ops.k3d.atlashcl.com","password":"passw0rd"}' \
+    --data-binary '{"username":"bpadmin@ops.'${domain_default}'","password":"passw0rd"}' \
     --compressed \
     --insecure | python -c "import sys, json; print(json.load(sys.stdin)['data'][0]['token'])" \
     |& tee ./token.txt
@@ -824,10 +1070,11 @@ function login {
 # declare pvtTime=()
 declare pvtTime="./pvtTime.txt"
 
+#  PVT version
 function curlPVT {
   # in seconds
   local -r totalTime=2
-  local -r totalRequests=1
+  local -r totalRequests=4
   # local -r intervalSeconds=`echo "scale=3; ${totalTime}/${totalRequests}" | bc -l | awk '{printf "%.3f\n", $0}'`
   local -r intervalSeconds=0.001
   # echo "intervalSeconds: ${intervalSeconds}"
@@ -838,8 +1085,8 @@ function curlPVT {
   for i in `seq 1 1 ${totalRequests}`
   do
     echo "about to curl $i"
-    curl -k 'https://api.k3d.atlashcl.com/api/files/batchMoveAsync' \
-      -H 'authority: api.k3d.atlashcl.com' \
+    curl -k "https://api.${domain_default}/api/files/batchMoveAsync" \
+      -H "authority: api.${domain_default}" \
       -H 'pragma: no-cache' \
       -H 'cache-control: no-cache' \
       -H 'accept: application/json, text/plain, */*' \
@@ -847,16 +1094,16 @@ function curlPVT {
       -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36' \
       -H 'crossorigin: true' \
       -H 'content-type: application/json;charset=UTF-8' \
-      -H 'origin: http://email.k3d.atlashcl.com' \
       -H 'sec-fetch-site: cross-site' \
       -H 'sec-fetch-mode: cors' \
       -H 'sec-fetch-dest: empty' \
-      -H 'referer: http://email.k3d.atlashcl.com/files${i}' \
       -H 'accept-language: en-US,en;q=0.9,zh;q=0.8,zh-CN;q=0.7,zh-TW;q=0.6' \
-      --data-binary '{"objects":["/bpadmin@ops.k3d.atlashcl.com/atlas-k3d-ops.yml","/bpadmin@ops.k3d.atlashcl.com/atlas-k3d-secret.yml"],"newPosition":"/bpadmin@ops.k3d.atlashcl.com/abc${i}/"}' \
+      --data-binary '{"objects":["/bpadmin@ops.'${domain_default}'/a.txt","/bpadmin@ops.'${domain_default}'/b.txt"],"newPosition":"/bpadmin@ops.'${domain_default}'/abc${i}/"}' \
       --compressed \
-      --insecure &
+       --insecure
 ##    sleep ${intervalSeconds}
+#     --insecure | python -c "import sys, json; print(json.load(sys.stdin)['data'])" \
+#     |& tee ./batchId.txt
   done
   local -r end=`date +%s%N`
 #  totalTimeCost=`expr $end - $start`
@@ -864,12 +1111,82 @@ function curlPVT {
   echo "${start},${end}" |& tee -a ${pvtTime}
 }
 
+function mvStatus {
+  # in seconds
+  echo login start
+  # login first
+  login
+  echo login is done
+  local -r totalTime=2
+  local -r totalRequests=1
+  # local -r intervalSeconds=`echo "scale=3; ${totalTime}/${totalRequests}" | bc -l | awk '{printf "%.3f\n", $0}'`
+  local -r intervalSeconds=0.001
+  # echo "intervalSeconds: ${intervalSeconds}"
+
+  # local -r token="$(login)"
+  local -r token=`cat ./token.txt`
+  local -r start=`date +%s%N`
+  local -r batchId=`cat ./batchId.txt`
+  curl "https://api.${domain_default}/api/files/getBatchStatus?serverType=atlas&batchId=${batchId}" \
+    -H 'authority: api.'${domain_default}'' \
+    -H 'pragma: no-cache' \
+    -H 'cache-control: no-cache' \
+    -H 'accept: application/json, text/plain, */*' \
+    -H "authorization: ${token}" \
+    -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36' \
+    -H 'origin: https://email.'${domain_default}'' \
+    -H 'sec-fetch-site: same-site' \
+    -H 'sec-fetch-mode: cors' \
+    -H 'sec-fetch-dest: empty' \
+    -H 'referer: https://email.'${domain_default}'/' \
+    -H 'accept-language: en-US,en;q=0.9,zh;q=0.8,zh-CN;q=0.7,zh-TW;q=0.6' \
+    --compressed \
+    --insecure
+  local -r end=`date +%s%N`
+#  totalTimeCost=`expr $end - $start`
+#  echo Execution time was `nano2Readable ${totalTimeCost}`, intervalSeconds: ${intervalSeconds}.
+  echo "${start},${end}" |& tee -a ${pvtTime}
+}
+
+function addTestUser {
+  local -ir totalUsers=100
+  login
+  local -r token=`cat ./token.txt`
+  for i in `seq 1 1 ${totalUsers}`
+  do
+    index="${i}"
+    if (( i < 10 )); then
+      index="0${i}"
+    fi
+    curl 'https://api.'${domain_default}'/api/admin/customers/1/users' \
+      -H 'authority: api.'${domain_default}'' \
+      -H 'pragma: no-cache' \
+      -H 'cache-control: no-cache' \
+      -H 'accept: application/json, text/plain, */*' \
+      -H "authorization: ${token}" \
+      -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.183 Safari/537.36' \
+      -H 'content-type: application/json;charset=UTF-8' \
+      -H 'origin: https://email.'${domain_default}'' \
+      -H 'sec-fetch-site: same-site' \
+      -H 'sec-fetch-mode: cors' \
+      -H 'sec-fetch-dest: empty' \
+      -H 'referer: https://email.'${domain_default}'/' \
+      -H 'accept-language: en-US,en;q=0.9,zh;q=0.8,zh-CN;q=0.7,zh-TW;q=0.6' \
+      --data-binary '{"email":"test'${index}'@ops.'${domain_default}'","quota":5242880,"language":"en-us","timezone":"Asia/Hong_Kong","profile":{"firstName":"test","lastName":"user'${index}'"},"permissions":{"imap":"enabled","pop3":"enabled","smtp":"enabled"},"password":"passw0rd"}' \
+      --compressed \
+      --insecure
+  done
+
+}
+
 
 function curlPVT_multiCore {
   echo "" > ${pvtTime}
+  echo login start
   # login first
   login
-  multipleCore 2 2 isDone curlPVT 2 3
+  echo login is done
+  multipleCore isDone curlPVT 2 3
   local -r array=(`cat ./pvtTime.txt`)
   declare -p array
   local declarestartArray=()
@@ -909,7 +1226,7 @@ function doFunction {
 }
 
 function multipleCore {
-  
+
   argu1=$1
   shift 1
   if [ "${argu1:-}" = "isDone" ] || [ "${argu1:-}" = "finalRound" ]; then
@@ -926,6 +1243,35 @@ function multipleCore {
   fi
 
 }
+
+
+function mysqlConnect {
+  local -r name=$1
+  local -r podName="atlas-${name}-${CONTAINER_INDEX}"
+  local -r pwd=`kubectl exec -n ${namespace_default} atlas-operation-0 -- cat /usr/local/site/config/env.yml |grep root-password | cut -d':' -f2 | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//'`
+  echo "pwd is: ${pwd}"
+  kubectl exec -n ${namespace_default} -c "${name}" "${podName}" -- bash -c "echo -ne '[client]\npassword=${pwd}\n' > /tmp/pwd.cnf"
+  kubectl exec -n ${namespace_default} -c "${name}" "${podName}" -- cat /tmp/pwd.cnf
+  kubectl exec -n ${namespace_default} -c "${name}" -it "${podName}" -- sh -c "mysql --defaults-extra-file=/tmp/pwd.cnf --user=root --host=localhost"
+}
+
+function atlasUIServe {
+  local -r project_name="atlas-ui"
+  local -r linux_project_path="${githubPath}/${project_name}"
+  local -r packageJson="${linux_project_path}/package.json"
+  # add webpack script
+  sed -e '/^\s*"scripts":\s*{$/,/^\s*"start":\s*/s/{$/&\n    "serve": "webpack --progress",    \n    "serve-public": "webpack --progress --config .\/webpack-public.config.js",/g' "${packageJson}" 
+  # install necessary depencencies if not present
+  if ! _grep 'webpack-bundle-analyzer' "${packageJson}" ; then
+    npm i --save-dev webpack-bundle-analyzer
+  fi
+  if ! _grep 'webpack-cli' "${packageJson}" ; then
+    npm i --save-dev webpack-cli
+  fi
+}
+
+
+
 
 function collectFilesLog {
   local -r name=$1
@@ -974,8 +1320,10 @@ elif [ "${_project:-}" = "worker" ] || [ "${_project:-}" = "synWorker" ]; then
   # reloadWorker ${_method} ${_param}
   reloadMicroSVC ${_method} ${_param} worker true " src package.json package-lock.json config "
 elif [ "${_project:-}" = "files-microservice" ] || [ "${_project:-}" = "files-svc" ] || [ "${_project:-}" = "files" ]; then
-  # filesSVC ${_method} ${_param} 
+  # filesSVC ${_method} ${_param}
   reloadMicroSVC ${_method} ${_param} files true " src package.json package-lock.json config "
+elif [ "${_project:-}" = "mailbox-microservice" ] || [ "${_project:-}" = "mailbox-svc" ] || [ "${_project:-}" = "mailbox" ]; then
+  reloadMicroSVC ${_method} ${_param} mailbox true " src package.json package-lock.json config "
 elif [ "${_project:-}" = "renameSpec" ] || [ "${_project:-}" = "specUT" ]; then
   renameSpec ${_method} ${_param}
 elif [ "${_project,,}" = "adminui" ] || [ "${_project:-}" = "admin" ] || [ "${_project:-}" = "citadel-control-panel" ]; then
@@ -984,8 +1332,10 @@ elif [ "${_project:-}" = "atlas-ui" ] || [ "${_project,,}" = "atlasui" ]; then
   reloadAtlasUI ${_method} ${_param}
 elif [ "${_project:-}" = "createBucket" ] || [ "${_project:-}" = "bucket" ]; then
   createBucket ${_method} ${_param}
-elif [ "${_project:-}" = "addUser" ] || [ "${_project:-}" = "addDefaultUser" ]; then
+elif [ "${_project:-}" = "defaultUser" ] || [ "${_project:-}" = "addDefaultUser" ]; then
   addDefaultUser ${_method} ${_param}
+elif [ "${_project:-}" = "addUser" ] || [ "${_project:-}" = "addTestUser" ]; then
+  addTestUser ${_method} ${_param}
 elif [ "${_project:-}" = "longerSession" ] || [ "${_project:-}" = "session" ]; then
   longerSession ${_method} ${_param}
 elif [ "${_project:-}" = "clean" ] || [ "${_project:-}" = "cleanAll" ]; then
@@ -1004,11 +1354,24 @@ elif [ "${_project:-}" = "collectLog" ] || [ "${_project:-}" = "collect" ]; then
   collectLog ${_method} ${_param}
 elif [ "${_project:-}" = "initK3d" ] || [ "${_project:-}" = "init" ]; then
   initK3d ${_method} ${_param}
+elif [ "${_project:-}" = "doSetup" ] || [ "${_project:-}" = "setup" ]; then
+  doSetup ${_method} ${_param}
+elif [ "${_project:-}" = "updateK3dAtlas" ] || [ "${_project:-}" = "k3dimage" ]; then
+  updateK3dAtlas ${_method} ${_param}
+elif [ "${_project:-}" = "updateK3sAtlas" ] || [ "${_project:-}" = "k3dimage" ]; then
+  updateK3sAtlas ${_method} ${_param}
 elif [ "${_project:-}" = "login" ] || [ "${_project:-}" = "doLogin" ]; then
   login ${_method} ${_param}
 elif [ "${_project:-}" = "curlPVT" ] || [ "${_project:-}" = "pvt" ]; then
   # multipleCore 2 2 2 isDone doFunction 2 3
   curlPVT_multiCore ${_method} ${_param}
+elif [ "${_project:-}" = "curlStatus" ] || [ "${_project:-}" = "status" ]; then
+  # multipleCore 2 2 2 isDone doFunction 2 3
+  mvStatus ${_method} ${_param}
+elif [ "${_project:-}" = "chown" ] || [ "${_project:-}" = "chown4Mdrop" ]; then
+  chown4Mdrop
+elif [ "${_project:-}" = "mysql" ] || [ "${_project:-}" = "mysqlConnect" ]; then
+  mysqlConnect ${_method} ${_param}
 elif [ "${_project:-}" = "collectFilesLog" ] || [ "${_project:-}" = "collectFiles" ]; then
   collectFilesLog ${_method} ${_param}
 elif [ "${_project:-}" = "log" ] || [ "${_project:-}" = "tailLog" ]; then
@@ -1083,8 +1446,8 @@ exit ${ret}
 # node /opt/github/Atlas/sourcecode/Atlas-Documents/tutorials/BlackboxScripts/UITranslationFormatConvert/index.js -ffi json -fpi /opt/github/Atlas/sourcecode/atlas-ui/public/locales/en-us/common.json -ffo csv -fpo /media/sf_github/tmp/a.csv
 
 # docker path
-# /opt/github/Atlas/sourcecode/wispr-node-buildtools/sandbox/buildroot/git/master/base/docker
 # /opt/github/Atlas/sourcecode/wispr-node-buildtools/sandbox/buildroot/git/master/docker
+# /opt/github/Atlas/sourcecode/wispr-node-buildtools/sandbox/buildroot/git/master/base/docker
 # buildRoot: /opt/github/Atlas/sourcecode/wispr-node-buildtools/build_docker_images/../sandbox/buildroot/git/master, DATABAG_REPO_NAME: databag
 # buildRoot: /opt/github/Atlas/sourcecode/wispr-node-buildtools/build_docker_images/../sandbox/buildroot/git/master, DOCKER_REPO_NAME: docker
 # baseDockerPath: /opt/github/Atlas/sourcecode/wispr-node-buildtools/build_docker_images/../sandbox/buildroot/git/master/base, DOCKER_REPO_NAME: docker
@@ -1095,6 +1458,9 @@ exit ${ret}
 
 # ssh -i ~/.ssh/mountain2.pem ubuntu@moutain02.atlahcl.com
 
+
+# find the slowest request 
+#cat batch-microservice.log.0 |grep -oPi 'elapsed":\d+' |cut -d':' -f2 |sort -r -n | vi -
 
 
 
@@ -1111,10 +1477,13 @@ exit ${ret}
 # syncSchedule: '*/10 * * * * *'" /usr/local/site/ldapsync-microservice/config/production.yml && \
 # kubectl exec -it -n default atlas-ldapsync-0 -- svc -du /service/ldapsync-microservice/
 
-#######################To Allow all CORS[cors][allowCors]###############################   
+#######################To Allow all CORS[cors][allowCors]###############################
 #docker exec -it atlas-doad-1 sed -i 's/CORS_ALLOW_ALL: false/CORS_ALLOW_ALL: true/g' /usr/local/site/api-gateway/config/production.yml && \
 #docker exec -it atlas-doad-1 svc -du '/service/api-gateway/'
 #
 #kubectl exec -it atlas-api-gateway-0 -- sed -i 's/CORS_ALLOW_ALL: false/CORS_ALLOW_ALL: true/g' /usr/local/site/api-gateway/config/production.yml && \
 #kubectl exec -it atlas-api-gateway-0 -- svc -du '/service/api-gateway/'
 #######################To reload Atlas-ui(Over)###############################
+
+
+# export KUBECONFIG=/etc/rancher/k3s/k3s.yaml

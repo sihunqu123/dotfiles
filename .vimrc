@@ -111,6 +111,14 @@ Plugin 'itchyny/lightline.vim'
 "   and put add it to your font. e.g. for windows, copy it into `C:\Windows\Fonts`
 Plugin 'ryanoasis/vim-devicons'
 
+
+" :IndentLinesToggle toggles lines on and off.
+Plugin 'Yggdroot/indentLine'
+
+
+" show colorful json grammar
+Plugin 'elzr/vim-json'
+
 " Plugin for javascript and typescript(tsx).
 Plugin 'pangloss/vim-javascript'
 Plugin 'maxmellon/vim-jsx-pretty'
@@ -451,6 +459,24 @@ nmap <silent> <Leader>g :NERDTreeToggle<cr>
 let g:CommandTWildIgnore=&wildignore . ",*/node_modules"
 
 
+" requires 'Yggdroot/indentLine'
+let g:indentLine_char_list = ['|', '¦', '┆', '┊']
+" quotes disappeared in json files
+"1. If your vim is 8.1.2060+, let g:vim_json_conceal = 0 should be enough.
+"2. otherwise,
+":e $VIMRUNTIME/syntax/json.vim
+":g/if has('conceal')/s//& \&\& 0/
+":wq
+"3. If you are using other syntax plugin for json, please turn to that plugin for help. e.g.
+"Plugin 'elzr/vim-json'
+" refer:
+"https://github.com/Yggdroot/indentLine/issues/140#issuecomment-624662832
+let g:vim_json_syntax_conceal = 0
+let g:indentLine_enabled = 1
+let g:vim_json_syntax_conceal = 0
+let g:vim_json_conceal = 0
+
+
 " NERDTREE settings
 " requires 'scrooloose/nerdtree'
 let g:NERDTreeWinPos = "left"
@@ -785,3 +811,19 @@ noremap <leader>p "0p
 "
 " press  g* to search without \< \>
 "
+"
+"
+" for multi-highlight(filePosition: ~/.vim/plugin/highlights.vim):
+"
+" ##########################################################################
+" Type '\m' to toggle mapping of keypad on/off (assuming \ leader).        #
+" Type '-0' to remove the highlight of current word/selection              #
+" Type '-1' to highlight currnet work/selection with colorSchme 1          #
+" Type '-2' to highlight currnet work/selection with colorSchme 2          #
+" Type '-\d' to highlight currnet work/selection with colorSchme n         #
+" Type '-f' to find the next match; '-F' to find backwards.                #
+" Can also type '-n' or '-N' for search; then n or N will find next.       #
+" Type '-s' to save multi-match of current window                          #
+" Type '-r' to restore the saved multi-match to current window             #
+" ##########################################################################
+

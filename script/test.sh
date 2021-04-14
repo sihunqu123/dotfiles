@@ -196,3 +196,56 @@ done
 
 CONTAINER_INDEX=${CONTAINER_INDEX:-0}
 echo "CONTAINER_INDEX: ${CONTAINER_INDEX}"
+
+declare -A animals=(
+  ["moo"]="cow"
+  ["woof"]="dog"
+)
+echo "${animals[moo]}"
+
+declare -A projectNameMap=(
+  ["api"]="api-gateway atlas-api-gateway-"
+  ["files"]="files-microservice atlas-files-"
+  ["batch"]="batch-microservice atlas-batch-"
+  ["worker"]="worker-microservice atlas-worker-"
+  ["atlas-ui"]="atlas-ui atlas-uiui-"
+)
+echo "${projectNameMap[api]}"
+pArr=(${projectNameMap[api]})
+declare -p  pArr
+projectName=${pArr[0]}
+podName=${pArr[1]}
+echo "projectName: ${projectName}, podName: ${podName}"
+
+
+ABC="true"
+
+if (( 1 == 2 )) && [ "${ABC:-}" = "true" ] || [ "${isSyncNodeCommonUtils:-}" = "1" ]; then
+  echo "true"
+else
+  echo "false"
+fi
+
+
+
+function aaa {
+  
+  echo "in function aaa"
+
+  function bbb {
+    echo "in function bbb"
+  }
+
+  bbb
+  echo "in function aaa 2"
+}
+
+aaa
+
+echo 'echo "a" '${SHELL}'"bb"'
+
+if ! grep scriptsss /opt/github/Atlas/sourcecode/atlas-ui/package.json; then
+  echo "true"
+else
+  echo "false"
+fi

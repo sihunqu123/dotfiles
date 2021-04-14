@@ -49,10 +49,11 @@
 #[http "https://gitlab.atlashcl.com"]
 #	proxy = ""
 # rest of those git repo need proxy
-#[http]
-#	proxy = "http://host.vm:1080"
-#	sslverify = false
-# proxy = ""
+[http]
+  sslverify = false
+  proxy = ""
+[httpd]
+  sslVersion = tlsv1.2
 [log]
 	date = default
 

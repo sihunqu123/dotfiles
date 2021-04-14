@@ -38,6 +38,8 @@ source ~/.dotfiles/.config/git_ssh.sh
 
 # for k8s
 export KUBE_EDITOR="vim"
+# for k3s
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 # for helm
 export HELM_HOST=:44134
 
