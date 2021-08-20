@@ -1,3 +1,7 @@
+" use this to debug vimrc
+"set verbose=9
+
+
 set nocompatible              " be iMproved, required
 set statusline+=%F
 filetype off                  " required
@@ -38,7 +42,7 @@ Plugin 'vim-scripts/Tabmerge'
 Plugin 'sjl/splice.vim'
 
 " Plugin for showing marks
-" usage: 
+" usage:
 "  mx           Toggle mark 'x' and display it in the leftmost column
 "  dmx          Remove mark 'x' where x is a-zA-Z
 "
@@ -69,6 +73,13 @@ Plugin 'sjl/splice.vim'
 " :SignatureRefresh
 Plugin 'kshenoy/vim-signature'
 
+" show relative line number
+" usage:
+"  :RltvNmbr  相対行数表示を有効にする。
+"  :RltvNmbr!  相対行数表示を無効にする。
+"  :RN 相対行数表示の有効、無効を切り替える。
+Plugin 'vim-scripts/RltvNmbr.vim'
+
 
 " Plugin for file tree
 Plugin 'scrooloose/nerdtree'
@@ -97,6 +108,22 @@ Plugin 'will133/vim-dirdiff'
 " Plugin for 'Start searching before pressing enter.' and so on.
 Plugin 'tpope/vim-sensible'
 
+" Plugin for displaying colorful file that can be viewed via cat/less.
+" Usage: To toggle the ANSIColor, :AnsiEsc
+" Note: This will only works on the current active window. Which means the
+"   other windows(can be switched via `Ctlr+w w`) and other tabs are still unchanged.
+Plugin 'powerman/vim-plugin-AnsiEsc'
+
+Plugin 'mhinz/vim-grepper'
+
+" Install vim-maktaba plugin for plugin developers - used in foldcol
+Plugin 'google/vim-maktaba'
+" Install foldcol - folding columns using <ctrl-v> visual mark, then :VFoldCol
+" ctrl + v to select, then :VFoldCol to fold, and :VFoldClear to unfold all.
+" refer:
+" https://itectec.com/unixlinux/vim-hide-first-n-letters-of-all-lines-in-a-file/
+Plugin 'paulhybryant/foldcol'
+
 " Plugin for compelte-prompt-list
 Plugin 'Valloric/YouCompleteMe'
 
@@ -117,7 +144,7 @@ Plugin 'Yggdroot/indentLine'
 
 
 " show colorful json grammar
-Plugin 'elzr/vim-json'
+"Plugin 'elzr/vim-json'
 
 " Plugin for javascript and typescript(tsx).
 Plugin 'pangloss/vim-javascript'
@@ -203,6 +230,8 @@ syntax on
 set encoding=utf-8
 set showmatch
 set number
+"或者设置相对行号
+" set relativenumber
 set cindent
 set autoindent
 set confirm
@@ -210,6 +239,12 @@ set ignorecase
 set smartcase
 set hlsearch
 set cmdheight=2
+
+"The 'textwidth' option can be used to automatically break a line before it gets too long. Set the 'textwidth' option to the desired maximum line length.
+"If you then type more characters (not spaces or tabs), the last word will be put on a new line (unless it is the only word on the line). If you set
+"'textwidth' to 0, this feature is disabled.
+set textwidth=0
+
 " display number of search matches & index of a current match
 " refer: https://github.com/google/vim-searchindex
 set shortmess-=S
@@ -221,6 +256,8 @@ set directory=.swp/,~/.swp/,/tmp//
 set undodir=.undo/,~/.undo/,/tmp//
 
 set notitle
+" enable the xml tag matching in xml/html files
+runtime macros/matchit.vim
 
 " global key
 let mapleader = ","
@@ -229,21 +266,12 @@ set tabstop=2 softtabstop=2 shiftwidth=2 smarttab
 set expandtab
 " to make pasting from clipboard works properly. PS: we comment out `set paste` since it would reset the `set expandtab`
 "set paste
-set autoindent
 " able to move cursor to all place even when this column doesn't exit
 set virtualedit=all
 set backspace=indent,eol,start
 set ff=unix
 " set lcs=tab:>-,trail:\ ,eol:$
 set list lcs=tab:»·
-
-" won't works when `lightline.vim` is working
-" set statusline=%t\ %y\ format:\ %{&ff};\ [%c,%l]
-
-" show full filepath
-" won't works when `lightline.vim` is working
-"set statusline+=%F
-
 
 " Open new split panes to right and bottom, which feels more natural than Vim's default
 set splitbelow
@@ -253,6 +281,18 @@ set splitright
 set visualbell
 set t_vb=
 "}
+
+
+"设置当请行有下划线(white background)
+set cursorline
+"au ColorScheme * hi! Cursorline cterm=bold ctermbg=236 guibg=Grey90
+au ColorScheme * hi! Cursorline cterm=bold ctermbg=4 guibg=Grey90
+"  line number of cursor
+au ColorScheme * hi! CursorLineNr cterm=bold ctermfg=159 ctermbg=236 guibg=Grey90
+
+"设置光标列(the whole column is white background)
+set cursorcolumn
+au ColorScheme * hi! CursorColumn cterm=bold ctermfg=250 ctermbg=232 guibg=Grey90
 
 " need to check if it's macos then set the colo
 colorscheme molokai
@@ -422,13 +462,20 @@ highlight DiffChange cterm=bold ctermfg=10 ctermbg=17 gui=none guifg=bg guibg=Re
 highlight DiffText   cterm=bold ctermfg=10 ctermbg=88 gui=none guifg=bg guibg=Red
 
 
-" highlight the current confirming replacing word.
-highlight IncSearch guibg=green ctermbg=green term=underline
+" highlight the current confirming replacing word.   below lines are both good
+"highlight IncSearch cterm=bold ctermfg=red ctermbg=green term=underline guibg=green
+highlight IncSearch cterm=reverse term=underline guibg=green
+autocmd ColorScheme * highlight IncSearch cterm=reverse term=underline guibg=green
 
 " adjust vim prompt menu's color if it's not clear enough
-autocmd ColorScheme * highlight Pmenu ctermbg=white
-autocmd ColorScheme * highlight PmenuSel ctermbg=yellow
-"
+autocmd ColorScheme * highlight Pmenu ctermbg=white ctermfg=blue
+autocmd ColorScheme * highlight PmenuSel ctermbg=yellow ctermfg=red
+
+
+
+" highlight will take effect initially but won't take effect after ASNI plugin break the color.
+" autocmd highlight won't take effect initially but will take effect after ASNI plugin break the color.
+" that's why I add both highlight and autocmd are specified in vimrc
 
 """""""""""""""""""""""""""""
 " Plugin Required Setttings
@@ -443,13 +490,14 @@ set scrolloff=1
 " Autoload file changes. You can undo by pressing u. (not works)
 " set autoread
 
-" disable showmode since we already have plugin:  https://github.com/itchyny/lightline.vim
-" requires itchyny/lightline.vim
-set noshowmode
-
 " reqires 'scrooloose/nerdtree'
 nmap <silent> <Leader>r :NERDTreeFind<cr>
 nmap <silent> <Leader>g :NERDTreeToggle<cr>
+
+
+" reqires 'powerman/vim-plugin-AnsiEsc'
+" show colorful ANSI in vim
+nmap <silent> <Leader>a :AnsiEsc<cr>
 
 " for windows
 "let g:NERDTreeDirArrowExpandable = '＞'
@@ -552,22 +600,72 @@ endif
 
 """"""""""""" lightline.vim settings {
 set laststatus=2
-" only `seoul256` can display correctly
+" only `seoul256` can display correctly without change the .zshrc
+" \ 'colorscheme': 'ayu_dark' best
+
 let g:lightline = {
-  \ 'colorscheme': 'seoul256',
+  \ 'colorscheme': 'default',
   \ 'active': {
   \   'left': [ [ 'mode', 'paste' ],
-  \             [ 'readonly', 'filename', 'modified', 'helloworld', 'bufnumber' ] ]
+  \             [ 'readonly', 'filename', 'modified', 'helloworld', 'bufnumber' ] ],
+  \   'right': [ [ 'lineinfo' ],
+  \              [ 'percent' ],
+  \              [ 'fileformat', 'fileencoding', 'filetype', 'charvaluehex', 'charOffset0x' ] ]
   \ },
   \ 'component': {
   \   'helloworld': 'Hello, world!',
   \   'filename': '%f',
-  \   'bufnumber': '%n'
+  \   'bufnumber': 'buf: %n',
+  \   'charOffset': 'offset: %o',
+  \   'charOffset0x': 'offset: %O'
   \ },
 \ }
+
+" overwrite the tabline style with ayu_dark's
+" refer: https://github.com/itchyny/lightline.vim/issues/431
+let s:palette_from = g:lightline#colorscheme#ayu_dark#palette
+let s:palette = g:lightline#colorscheme#default#palette
+let s:palette.tabline.tabsel = s:palette_from.tabline.tabsel
+let s:palette.tabline.left = s:palette_from.tabline.left
+let s:palette.tabline.middle = s:palette_from.tabline.middle
+let s:palette.tabline.right = s:palette_from.tabline.right
+
+
+"This plugin has own colorscheme for tab colors. If you want to use the default tabline, disable the tabline of this plugin:     'enable': { 'tabline': 0 },
+"  \ 'enable': { 'tabline': 0 },
+" refer: https://github.com/itchyny/lightline.vim/issues/589
+
+" disable showmode since we already have plugin:  https://github.com/itchyny/lightline.vim
+" requires itchyny/lightline.vim
+set noshowmode
+
 "}
 
 
+
+" won't works when `lightline.vim` is working
+" set statusline=%t\ %y\ format:\ %{&ff};\ [%c,%l]
+
+" show full filepath
+" won't works when `lightline.vim` is working
+"set statusline+=%F
+
+""""""" mhinz/vim-grepper {
+" In cases where the arguments don't come last, use $* as a placeholder:
+" 'grepprg': 'grep -Rn $* .'
+let g:grepper = {
+    \ 'jump': 1,
+    \ 'quickfix': 0,
+    \ 'highlight': 1,
+    \ 'grep': {
+    \   'grepprg':    'grep -Rni $* $.'
+    \ },
+    \ 'tools': ['grep', 'git']
+  \ }
+
+nmap <Leader>* :Grepper -noprompt -highlight -open -noquickfix -tool grep -grepprg grep -n -r -i <C-R>=expand("<cword>")<CR> %<Left><Left><Left>
+
+" }
 """"""""""""" undoquit.vim settings {
 nnoremap <c-w>c :call undoquit#SaveWindowQuitHistory()<cr><c-w>c
 "}
@@ -626,6 +724,12 @@ let Tlist_Exit_OnlyWindow=1
 
 
 
+"""""" reset the background of normal to none, so that vim's backgroundColor still behave good in gnuScreen
+"""""" I want transparent background instead of the black background from the theme
+highlight Normal ctermbg=none
+highlight NonText ctermbg=none
+autocmd ColorScheme * highlight Normal ctermbg=None
+autocmd ColorScheme * highlight NonText ctermbg=None
 
 
 
@@ -691,18 +795,23 @@ inoremap <C-]> <Esc><Right>
 " <silent> menas user cannot see any iteraction when this command running.
 " e.g: :%s/\s\+//g prompt, and user cannot see it.
 
-" search text in project
+" search text in project {
 " use this to grep only specific file type. (when --exclude used, --include will be ignored)
 " --include="*.js"
 " --include=\*.{py,pl,sh}
-nmap <Leader>h :grep -n -r --exclude-dir="node_modules" --exclude-dir="mochawesome-report" --exclude-dir="domino-iam-service" --exclude-dir="build" --exclude-dir="logs" --exclude-dir="website/node_modules" --exclude-dir="dist" --exclude-dir=".nyc_output" --exclude-dir=".tmp" --exclude-dir="coverage" --exclude="*.swp" --exclude="*.orig" -i  ./<Left><Left><Left>
+"nmap <Leader>h :grep -n -r --color=always --exclude-dir="node_modules" --exclude-dir="mochawesome-report" --exclude-dir="domino-iam-service" --exclude-dir="build" --exclude-dir="logs" --exclude-dir="website/node_modules" --exclude-dir="dist" --exclude-dir=".nyc_output" --exclude-dir=".tmp" --exclude-dir="coverage" --exclude="*.swp" --exclude="*.orig" -i  ./<Left><Left><Left>
+" we only use the Grepper to highlight the grep result.
+nmap <Leader>h :Grepper -noprompt -highlight -open -quickfix -tool grep -grepprg grep -n -r --exclude-dir="node_modules" --exclude-dir="mochawesome-report" --exclude-dir="domino-iam-service" --exclude-dir="build" --exclude-dir="logs" --exclude-dir="website/node_modules" --exclude-dir="dist" --exclude-dir=".nyc_output" --exclude-dir=".tmp" --exclude-dir="coverage" --exclude="*.swp" --exclude="*.orig" -i  ./<Left><Left><Left>
+
+"}
 
 " to avoid Arrow Key not works in Vim.
 "set term=ansi
+
 " export TERM=xterm-256color
-" if !has('gui_running')
-"   set t_Co=256
-" endif
+"if !has('gui_running')
+"  set t_Co=256
+"endif
 
 " let g:lightline = {
 "   \ 'colorscheme': 'wombat',
@@ -728,10 +837,20 @@ while c <= 99
 endwhile
 "}
 
+
+
+
+" 在vimrc配置文件中，增加以下两条命令，可以在屏幕底部启用wildmenu菜单显示：
+" 启用wildmenu菜单之后，在命令行中，第一次点击Tab时，
+" 将列示所有可能与已输入字符相匹配的命令列表；第二次点击Tab时，则将在显示的wildmenu中遍历匹配项；然后点击回车键做出选择。
+"set wildmenu
+"set wildmode=list:longest,full
+" refer: https://yyq123.blogspot.com/2012/08/vim-manipulate-directory.html
 " auto-complete for buffer name. {
 "you can use the Buffers menu to conveniently access buffers (tear off the menu to make an always-visible list).
 "Or, put the following in your vimrc:
-set wildchar=<Tab> wildmenu wildmode=full
+"set wildchar=<Tab> wildmenu wildmode=full
+set wildchar=<Tab> wildmenu wildmode=list:longest,full
 "Now, pressing Tab on the command line will show a menu to complete buffer and file names.
 "}
 
@@ -810,6 +929,25 @@ noremap <leader>p "0p
 "
 "
 " press  g* to search without \< \>
+"
+"
+"""""""""""""""""""
+" To convert to unix
+""""""""""""""""""
+" find . -mindepth 0 -maxdepth 999 -type f |grep -i -P "\.(js|html|json|css|sh)$" | xargs -L 1 -I % sed -i -z 's/\r//g' %
+"
+"
+" :set ff?
+" To convert dos to unix:
+" way1
+" :e ++ff=unix
+" Remeber the ^M should be Ctrl+V, then Ctrl + M
+" :%s/\^M//g
+" :wq
+"
+" :e    -> reload
+" ++  -> force
+" ff .   -> fileformat
 "
 "
 "

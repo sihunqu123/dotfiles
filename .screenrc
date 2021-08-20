@@ -36,6 +36,10 @@ vbell_msg "   Wuff  ----  Wuff!!  "
 # IC    insert multiple chars
 # nx    terminal uses xon/xoff
 
+# term xterm
+# term screen-256color
+
+
 termcap  facit|vt100|xterm|xterm-* LP:G0
 terminfo facit|vt100|xterm|xterm-* LP:G0
 
@@ -270,3 +274,10 @@ altscreen on
 
 # disable dynamic title
 dynamictitle  [on|off]
+
+
+
+# to prevent any screenFlashing
+vbell on
+vbell_msg ''
+termcapinfo *  vb=:

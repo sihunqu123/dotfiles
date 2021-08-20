@@ -106,7 +106,7 @@ source $ZSH/oh-my-zsh.sh
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 
-# export TERM=xterm-256color
+export TERM=xterm-256color
 
 # source .config/git_ssh.sh
 source ~/.dotfiles/.config/shell.sh

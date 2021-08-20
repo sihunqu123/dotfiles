@@ -13,22 +13,6 @@ set -o pipefail
 
 shopt -s expand_aliases
 
-#
-# Judge if a command is available
-# @param 1: the command to judge
-#
-function hasCommand {
-  # the `set -o errexit` set in upper scope won't affect env in this function's scope
-  # thus script won't terminate even when ${1} doesn't not exits.
-  which ${1}
-  local -r ret=$?
-  if ((exitStatus==0)); then
-    echo "true"
-  else
-    echo "false"
-  fi
-}
-
 function nano2Readable {
   local -r ori=$1
   # convert nano to milliseconds
@@ -64,10 +48,11 @@ case "$uname" in
               ;;
     (*Darwin*) currentOS='Darwin';
               echo "OS is MacOS."
-              has_ggrep=$(hasCommand ggrep)
-              if [ "${has_ggrep}" = "true" ]; then # aria2c is available
-                echo "[check] GNU utils is install, ready to run"
-                alias _grep="ggrep"
+              if command -v ggrep &> /dev/null
+              then
+                echo "[checked] GNU utils is install, ready to run"
+                alias grep="ggrep"
+                alias sed="gsed"
               else
                 echo "Error: pls make sure ggrep(the GNU grep) is install. Tips: run
                 brew install coreutils findutils gnu-tar gnu-sed gawk gnutls gnu-indent gnu-getopt
@@ -170,7 +155,7 @@ function reloadAtlasUI {
     exit 2
   fi
   ls  -A1t  ${linux_project_path}/dist/app/*.hot-update.* |tail -n +4 | xargs -I % -L 1 rm -rfv % && true
-  ls  -A1t  ${linux_project_path}/dist/public/*.hot-update.* |tail -n +4 | xargs -I % -L 1 rm -rfv % && true 
+  ls  -A1t  ${linux_project_path}/dist/public/*.hot-update.* |tail -n +4 | xargs -I % -L 1 rm -rfv % && true
   # docker exec -it ${containerName} sh -c 'rm -rfv ${container_project_path}/*.hot-update.*'
   kubectl exec -it -n ${namespace_default} ${containerName} -- sh -c 'rm -rfv ${container_project_path}/*.hot-update.*'
   kubectl exec -it -n ${namespace_default} ${containerName} -- sh -c 'rm -rfv ${container_project_path2}/*.hot-update.*'
@@ -544,7 +529,7 @@ function chown4Mdrop {
     'batch'
     'worker'
   );
-  
+
   for item in "${arr[@]}"; do
     pArr=(${projectNameMap[$item]})
     declare -p  pArr
@@ -580,9 +565,8 @@ function createBucket {
     local -r filePath=$(echo ${linux_mcPath} | _grep -oP ".*\/(?=[^/]+)")
     local -r filename=${theStr#${thePath}}
     # pls make sure aria2c is install
-    local -r has_aria2c=$(hasCommand aria2c)
-
-    if [ "${has_aria2c}" = "true" ]; then # aria2c is available
+    if command -v aria2c &> /dev/null
+    then
       aria2c --check-certificate=false --dir=${filePath} --out=${filename} -x 8 -s 8 https://dl.min.io/client/mc/release/linux-amd64/mc
     else
       echo "if the download is too slow, pls install aria2c and then try again."
@@ -907,7 +891,7 @@ function doSetup {
     else
       sleep 5;
     fi
-  done 
+  done
 
   set +o errexit
 
@@ -950,12 +934,12 @@ function updateK3sAtlas {
   while (( ${podLeftCount-} != 1 )); do
     if (( COUNT >= limit )); then
       echo "Error: some pods is not removed yet, while maximum retry times exceeded. Exiting..."
-      kubectl get pods -n ${namespace_default} 
+      kubectl get pods -n ${namespace_default}
     fi
     echo "waiting for all pods terminated..."
     sleep 20
     rows=$(kubectl get pods -n ${namespace_default} | tee /dev/tty)
-#   refer: 
+#   refer:
 #   https://superuser.com/questions/543235/how-to-redirect-multiple-bash-commands-to-a-variable-and-screen
     podLeftCount=$(echo ${rows} |wc -l)
     kubectl get rc,statefulsets,svc,deployment,pods,pvc,cronjob,job -A --show-kind --show-labels  |grep persistentvolumeclaim |awk '{print $2;}' |xargs -L 1 -I % kubectl delete % && true
@@ -964,12 +948,12 @@ function updateK3sAtlas {
   array=(\
      pv \
   ); for resourceType in "${array[@]}"; do kubectl get -n "${namespace_default}" "${resourceType}" -o wide | awk '{if(NR>1) print $1;}' |xargs -L 1 -I %  kubectl delete -n "${namespace_default}" ${resourceType}/%; done
-  
+
   echo "all pods deleted"
-  kubectl get svc,statefulset,pods -n ${namespace_default} 
- 
+  kubectl get svc,statefulset,pods -n ${namespace_default}
+
   # TODO: should use `-n ${namespace_default}` instead of `-A`?
-  kubectl get rc,statefulsets,svc,deployment,pods,pvc,cronjob,job -A --show-kind --show-labels  |grep persistentvolumeclaim |awk '{print $2;}' |xargs -L 1 -I % kubectl delete % && true 
+  kubectl get rc,statefulsets,svc,deployment,pods,pvc,cronjob,job -A --show-kind --show-labels  |grep persistentvolumeclaim |awk '{print $2;}' |xargs -L 1 -I % kubectl delete % && true
   sleep 5
   set +o pipefail
   cd ${dockerPath}/helm/k3d-data
@@ -995,12 +979,12 @@ function updateK3dAtlas {
   while (( ${podLeftCount-} != 1 )); do
     if (( COUNT >= limit )); then
       echo "Error: some pods is not removed yet, while maximum retry times exceeded. Exiting..."
-      kubectl get pods -n ${namespace_default} 
+      kubectl get pods -n ${namespace_default}
     fi
     echo "waiting for all pods terminated..."
     sleep 20
     rows=$(kubectl get pods -n ${namespace_default} | tee /dev/tty)
-#   refer: 
+#   refer:
 #   https://superuser.com/questions/543235/how-to-redirect-multiple-bash-commands-to-a-variable-and-screen
     podLeftCount=$(echo ${rows} |wc -l)
     kubectl get rc,statefulsets,svc,deployment,pods,pvc,cronjob,job -A --show-kind --show-labels  |grep persistentvolumeclaim |awk '{print $2;}' |xargs -L 1 -I % kubectl delete % && true
@@ -1009,12 +993,12 @@ function updateK3dAtlas {
   array=(\
      pv \
   ); for resourceType in "${array[@]}"; do kubectl get -n "${namespace_default}" "${resourceType}" -o wide | awk '{if(NR>1) print $1;}' |xargs -L 1 -I %  kubectl delete -n "${namespace_default}" ${resourceType}/%; done
-  
+
   echo "all pods deleted"
-  kubectl get svc,statefulset,pods -n ${namespace_default} 
- 
+  kubectl get svc,statefulset,pods -n ${namespace_default}
+
   # TODO: should use `-n ${namespace_default}` instead of `-A`?
-  kubectl get rc,statefulsets,svc,deployment,pods,pvc,cronjob,job -A --show-kind --show-labels  |grep persistentvolumeclaim |awk '{print $2;}' |xargs -L 1 -I % kubectl delete % && true 
+  kubectl get rc,statefulsets,svc,deployment,pods,pvc,cronjob,job -A --show-kind --show-labels  |grep persistentvolumeclaim |awk '{print $2;}' |xargs -L 1 -I % kubectl delete % && true
   sleep 5
   set +o pipefail
   docker network disconnect k3d-atlas registry.local
@@ -1260,7 +1244,7 @@ function atlasUIServe {
   local -r linux_project_path="${githubPath}/${project_name}"
   local -r packageJson="${linux_project_path}/package.json"
   # add webpack script
-  sed -e '/^\s*"scripts":\s*{$/,/^\s*"start":\s*/s/{$/&\n    "serve": "webpack --progress",    \n    "serve-public": "webpack --progress --config .\/webpack-public.config.js",/g' "${packageJson}" 
+  sed -e '/^\s*"scripts":\s*{$/,/^\s*"start":\s*/s/{$/&\n    "serve": "webpack --progress",    \n    "serve-public": "webpack --progress --config .\/webpack-public.config.js",/g' "${packageJson}"
   # install necessary depencencies if not present
   if ! _grep 'webpack-bundle-analyzer' "${packageJson}" ; then
     npm i --save-dev webpack-bundle-analyzer
@@ -1459,7 +1443,7 @@ exit ${ret}
 # ssh -i ~/.ssh/mountain2.pem ubuntu@moutain02.atlahcl.com
 
 
-# find the slowest request 
+# find the slowest request
 #cat batch-microservice.log.0 |grep -oPi 'elapsed":\d+' |cut -d':' -f2 |sort -r -n | vi -
 
 
