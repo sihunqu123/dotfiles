@@ -1,3 +1,4 @@
+#!/bin/bash
 
 echo "setup begin"
 home=`cd ~ && pwd`
@@ -8,27 +9,38 @@ home=`cd ~ && pwd`
 bakDir="${home}/bakDir"
 dotDir="${home}/.dotfiles"
 
-GREP_CLI='grep'
-
 source ./utils/commonUtil.sh
 
-isMacOS_b=$(isMacOS)
-# set grep command line tool
-if [[ "${isMacOS_b}" == "true" ]]; then
-  # for macos, use ggrep instead
-  which ggrep > /dev/null
-  exitStatus=$?
-  if ((exitStatus==0)); then
-    # echo "use ggrep instead."
-    GREP_CLI='ggrep'
-  else
-    # echo "Setup failed! ggrep is needed! Please install gnu grep."
-    exit 1
-  fi
-else
-  # for centos7 and Windows, nothing to do
-  echo "grep is OK"
-fi
+shopt -s expand_aliases
+
+declare -r uname=$(uname)
+declare currentOS=""
+
+case "$uname" in
+    (*Linux*) currentOS='Linux';
+              echo "OS is Linux"
+              alias _grep="grep"
+              ;;
+    (*Darwin*) currentOS='Darwin';
+              echo "OS is MacOS."
+              has_ggrep=$(hasCommand ggrep)
+              if [ "${has_ggrep}" = "true" ]; then # aria2c is available
+                echo "[check] GNU utils is install, ready to run"
+                alias _grep="ggrep"
+              else
+                echo "Error: pls make sure ggrep(the GNU grep) is install. Tips: run
+                brew install coreutils findutils gnu-tar gnu-sed gawk gnutls gnu-indent gnu-getopt
+                For details, pls refer to:
+                  https://apple.stackexchange.com/questions/69223/how-to-replace-mac-os-x-utilities-with-gnu-core-utilities"
+                exit 2;
+              fi
+              ;;
+    (*CYGWIN*) currentOS='CYGWIN';
+              echo "OS is CYGWIN"
+              alias _grep="grep"
+              ;;
+    (*) echo 'error: unsupported platform.'; exit 2; ;;
+esac;
 
 echo "bakDir: ${bakDir}"
 $(mkdir ${bakDir})
@@ -41,7 +53,7 @@ fi
 
 # return -1 if not found
 function lastIndexOf {
-  echo "$1" | ${GREP_CLI} -b -o "$2" | awk 'BEGIN {FS=":";RET=-1}{RET=$1} END {print RET}'
+  echo "$1" | grep -b -o "$2" | awk 'BEGIN {FS=":";RET=-1}{RET=$1} END {print RET}'
 }
 # ret=$(lastIndexOf "a/bcb/de" "/")
 # echo "last index: ${ret}" # output: 5

@@ -59,3 +59,4 @@
 
 [https]
 	sslVerify = false
+	postBuffer = 524288000
