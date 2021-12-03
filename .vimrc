@@ -499,6 +499,11 @@ nmap <silent> <Leader>g :NERDTreeToggle<cr>
 " show colorful ANSI in vim
 nmap <silent> <Leader>a :AnsiEsc<cr>
 
+
+" reqires 'Yggdroot/indentLine'
+" toggles indent lines on and off
+nmap <silent> <Leader>i :IndentLinesToggle<cr>
+
 " for windows
 "let g:NERDTreeDirArrowExpandable = '＞'
 "let g:NERDTreeDirArrowCollapsible = '﹀'
