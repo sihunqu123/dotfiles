@@ -143,6 +143,9 @@ Plugin 'ryanoasis/vim-devicons'
 
 
 " :IndentLinesToggle toggles lines on and off.
+" !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+" This plugin may has side-effect on the indent of nerdtree
+" !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 Plugin 'Yggdroot/indentLine'
 
 
@@ -228,7 +231,19 @@ endif
 "endif
 "}
 
+" svae the list of all bookmark in .git instead of $HOME/.NERDTreeBookmarks when it's a git directory
+" refer: https://stackoverflow.com/questions/16097721/showing-nerdtree-bookmark-relative-to-project-directory
+if isdirectory(expand(".git"))
+  let g:NERDTreeBookmarksFile = '.git/.nerdtree-bookmarks'
+endif
+
+
 syntax on
+set synmaxcol=250 " Syntax coloring lines that are too long just slows down the world
+set ttyfast " u got a fast terminal
+set ttyscroll=3
+set lazyredraw " to avoid scrolling problems
+
 " required by YouCompleteMe
 set encoding=utf-8
 set showmatch
@@ -494,7 +509,8 @@ set scrolloff=1
 " set autoread
 
 " reqires 'scrooloose/nerdtree'
-nmap <silent> <Leader>r :NERDTreeFind<cr>
+"nmap <silent> <Leader>r :NERDTreeFind<cr>
+nmap <Leader>r :NERDTreeFind
 nmap <silent> <Leader>g :NERDTreeToggle<cr>
 
 
@@ -531,7 +547,8 @@ let g:vim_json_syntax_conceal = 0
 let g:indentLine_enabled = 1
 let g:vim_json_syntax_conceal = 0
 let g:vim_json_conceal = 0
-
+" refer: https://github.com/Yggdroot/indentLine/issues/47
+autocmd FileType help,nerdtree IndentLinesDisable
 
 " NERDTREE settings
 " requires 'scrooloose/nerdtree'
@@ -586,14 +603,18 @@ let g:aaa="value of aaa"
 
 
 
+"let g:Indentantion = ''
 " required by vim-devicons{
 " for windows client
-set guifont=Inconsolata_Nerd_Font_Mono:h11
+"set guifont=Inconsolata_Nerd_Font_Mono:h11
+set guifont=DroidSansMono_Nerd_Font:h11
 " for linux client
 "set guifont=Inconsolata_Nerd_Font_Mono\ 11
 let g:webdevicons_enable_nerdtree = 1
 " whether or not to show the nerdtree brackets around flags
-let g:webdevicons_conceal_nerdtree_brackets = 1
+"let g:webdevicons_conceal_nerdtree_brackets = 1
+"let g:WebDevIconsUnicodeDecorateFolderNodes = 1
+let g:DevIconsEnableFoldersOpenClose = 1
 "}
 
 
@@ -766,6 +787,24 @@ au InsertLeave * call Mode()
 """""""""""""""""""""""""""""""
 " highlight selected text; // now we use `space space` to to this instad.
 "vnoremap // y/\V<C-r>=escape(@",'/\')<CR><CR>
+
+" Reveal the folder/file under current cursor in NERDTree {
+" test pasth:
+" /opt/github/DX/DAM/dam-ui/src
+" /opt/github/Atlas/sourcecode/atlas-ui/webpack-public.config.js
+
+"nnoremap <silent> gr BvE"zy:NERDTreeFind <C-r>z<CR>
+" press gr -> copy current word into register z -> add a trailing slash if it's a folder -> run NERDTreeFind.
+nnoremap  <silent> gr BvE"zy:call SetFolderSlash()<CR>:NERDTreeFind <C-r>z<CR>
+
+function! SetFolderSlash()
+  if isdirectory(@z)
+    let @z=@z . '/'
+  endif
+endfunction
+" }
+
+
 
 " hightlight current word without jumping to next match
 nnoremap <silent> <Space><Space> "zyiw:let @/ = '\<' . @z . '\>'<CR>:set hlsearch<CR>

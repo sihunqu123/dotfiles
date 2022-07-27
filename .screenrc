@@ -230,16 +230,16 @@ bind b focus bottom
 #bind ' ' dinfo
 
 bind ' ' layout show
-bind 0 layout select 0
-bind 1 layout select 1
-bind 2 layout select 2
-bind 3 layout select 3
-bind 4 layout select 4
-bind 5 layout select 5
-bind 6 layout select 6
-bind 7 layout select 7
-bind 8 layout select 8
-bind 9 layout select 9
+#bind 0 layout select 0
+#bind 1 layout select 1
+#bind 2 layout select 2
+#bind 3 layout select 3
+#bind 4 layout select 4
+#bind 5 layout select 5
+#bind 6 layout select 6
+#bind 7 layout select 7
+#bind 8 layout select 8
+#bind 9 layout select 9
 
 
 # ctrlA then right-arrow-key jumps active cursor one pane to the right:

@@ -1,0 +1,11 @@
+boy
+boy is good
+/* eslint-disable */
+//SDFASDFA
+/* eslint-enable */
+girl
+boy is good
+/* eslint-disable */
+//SDFASDFADSFA
+/* eslint-enable */
+gay
