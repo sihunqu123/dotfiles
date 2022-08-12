@@ -178,6 +178,7 @@ exitIfError exitStatus
 function exitIfError {
   if (($1==0)); then
     echo "setup successfully!"
+    echo "Please DO remember to install fzf(u have how to do that in your notes)"
   else
     echo "setup failed!"
     exit 1
