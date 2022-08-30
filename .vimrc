@@ -1,4 +1,7 @@
 " use this to debug vimrc
+
+"
+" use this to debug vimrc
 "set verbose=9
 
 
@@ -125,7 +128,7 @@ Plugin 'google/vim-maktaba'
 Plugin 'paulhybryant/foldcol'
 
 " Plugin for compelte-prompt-list
-Plugin 'Valloric/YouCompleteMe'
+"Plugin 'Valloric/YouCompleteMe'
 
 " Plugin for statueline:  https://github.com/itchyny/lightline.vim
 Plugin 'itchyny/lightline.vim'
@@ -738,6 +741,20 @@ autocmd ColorScheme * highlight NonText ctermbg=None
 
 
 
+
+
+"""""""""""""""""""""""""""""""
+" Fix the :0000/0000/0000^G issue when enter vim
+" refer: https://stackoverflow.com/questions/31775203/vim-in-cygwin-replaces-first-character-with-g-on-opening-a-file
+"""""""""""""""""""""""""""""""
+set noek
+function Mode()
+  set ek
+endfunction
+
+au InsertEnter * call Mode()
+au InsertChange * call Mode()
+au InsertLeave * call Mode()
 
 
 

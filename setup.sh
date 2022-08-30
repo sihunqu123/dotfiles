@@ -3,6 +3,7 @@
 echo "setup begin"
 home=`cd ~ && pwd`
 
+set -x
 
 # .bashrc
 # const
@@ -15,6 +16,8 @@ shopt -s expand_aliases
 
 declare -r uname=$(uname)
 declare currentOS=""
+
+echo "uname=${uname}"
 
 case "$uname" in
     (*Linux*) currentOS='Linux';
@@ -35,8 +38,12 @@ case "$uname" in
                 exit 2;
               fi
               ;;
-    (*CYGWIN*) currentOS='CYGWIN';
+    (*CYGWIN*) currentOS='windows';
               echo "OS is CYGWIN"
+              alias _grep="grep"
+              ;;
+    (*MINGW64*) currentOS='windows';
+              echo "OS is MINGW64"
               alias _grep="grep"
               ;;
     (*) echo 'error: unsupported platform.'; exit 2; ;;
@@ -88,7 +95,7 @@ function linkFrmDot {
     else
       echo "and is not a link, thus, will move it to ${bakDir}"
       # use cp for test
-      mv -fv $fileInHome ${bakDir}/
+      mv -fv ${fileInHome} ${bakDir}/
       # cp -fRpv $fileInHome ${bakDir}/
     fi
   else
@@ -113,9 +120,26 @@ function linkFrmDot {
 
   fileInDotFile="${dotDir}/$1"
   ln -sv ${fileInDotFile} ${fileInHome}
+# if [ -d ${fileInDotFile} ]; then
+#   echo "${fileInDotFile} is folder"
+#   if [[ ${currentOS} == "windows" ]]; then
+#     echo "${fileInDotFile} - os is windows"
+#     cp -fRpv ${fileInDotFile} ${fileInHome}
+#   else
+#     echo "${fileInDotFile} - os is not windows"
+#     ln -sv ${fileInDotFile} ${fileInHome}
+#   fi
+# else
+#   echo "${fileInDotFile} is a file"
+#   ln -sv ${fileInDotFile} ${fileInHome}
+# fi
 }
 
 function setup {
+  echo "script folder creating..."
+  mkdir ~/script ;
+  echo "script folder created"
+
   item2link=(
     '.gitconfig' '.screenrc' '.bashrc' '.npmrc' '.vimrc' '.bash_profile'
     '.zshrc' '.vim/plugin/highlights.csv' '.vim/plugin/highlights.vim'
