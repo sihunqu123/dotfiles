@@ -125,7 +125,7 @@ Plugin 'google/vim-maktaba'
 " ctrl + v to select, then :VFoldCol to fold, and :VFoldClear to unfold all.
 " refer:
 " https://itectec.com/unixlinux/vim-hide-first-n-letters-of-all-lines-in-a-file/
-Plugin 'paulhybryant/foldcol'
+Plugin 'sihunqu123/foldcol'
 
 " Plugin for compelte-prompt-list
 "Plugin 'Valloric/YouCompleteMe'
@@ -954,7 +954,7 @@ noremap <leader>p "0p
 "
 "
 """""""""""""""""""
-" To convert to unix
+" To convert to unix[eol]
 """"""""""""""""""
 " find . -mindepth 0 -maxdepth 999 -type f |grep -i -P "\.(js|html|json|css|sh)$" | xargs -L 1 -I % sed -i -z 's/\r//g' %
 "
