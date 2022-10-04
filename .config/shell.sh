@@ -22,6 +22,7 @@ if [[ "${isMacOS_b}" == "true" ]]; then
   PATH="/usr/local/Cellar/ruby/2.6.2/bin:${PATH}"
 else
   # for centos7 and Windows
+  echo "======== is NOT macOS"
   alias gls='ls -AlpkFih --color=always'
 fi
 

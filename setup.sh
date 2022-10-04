@@ -46,7 +46,12 @@ case "$uname" in
               echo "OS is MINGW64"
               alias _grep="grep"
               ;;
-    (*) echo 'error: unsupported platform.'; exit 2; ;;
+#   (*) echo 'error: unsupported platform.'; exit 2; ;;
+# fallback to CYGWIN
+    (*) currentOS='windows';
+              echo "OS is CYGWIN"
+              alias _grep="grep"
+              ;;
 esac;
 
 echo "bakDir: ${bakDir}"
