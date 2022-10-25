@@ -148,6 +148,9 @@ Plugin 'ryanoasis/vim-devicons'
 " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 Plugin 'Yggdroot/indentLine'
 
+" open zip file in zip
+Plugin 'lbrayner/vim-rzip'
+
 
 " show colorful json grammar
 "Plugin 'elzr/vim-json'

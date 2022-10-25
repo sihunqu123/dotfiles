@@ -26,10 +26,11 @@ case "$uname" in
               ;;
     (*Darwin*) currentOS='Darwin';
               echo "OS is MacOS."
-              has_ggrep=$(hasCommand ggrep)
-              if [ "${has_ggrep}" = "true" ]; then # aria2c is available
-                echo "[check] GNU utils is install, ready to run"
-                alias _grep="ggrep"
+              if command -v ggrep &> /dev/null
+              then
+                echo "[checked] GNU utils is install, ready to run"
+                alias grep="ggrep"
+                alias sed="gsed"
               else
                 echo "Error: pls make sure ggrep(the GNU grep) is install. Tips: run
                 brew install coreutils findutils gnu-tar gnu-sed gawk gnutls gnu-indent gnu-getopt
