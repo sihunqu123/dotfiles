@@ -206,10 +206,10 @@ termcapinfo linux C8
 # Red Hat's normal status line
 hardstatus string "[screen %n%?: %t%?] %h"
 
-# bind = resize =
-# bind + resize +1
-# bind - resize -1
-# bind _ resize max
+bind = resize =
+bind + resize +1
+bind - resize min
+bind _ resize max
 #
 # defnonblock 1
 # blankerprg rain -d 100
@@ -239,7 +239,27 @@ bind ' ' layout show
 #bind 6 layout select 6
 #bind 7 layout select 7
 #bind 8 layout select 8
-#bind 9 layout select 9
+
+#***********************************************************************************
+# Note: u can run bind[key] in screen directly, instead of reload/reboot screen    *
+#***********************************************************************************
+
+# remove the existing function bound to ','
+bind ","
+bind "," layout select 
+#bindkey "^A,"
+#bindkey -d "^A,"
+#bindkey -m "^A,"
+#bindkey '^A,0' layout select 0
+#bindkey '^A,1' layout select 1
+#bindkey '^A,2' layout select 2
+#bindkey '^A,3' layout select 3
+#bindkey '^A,4' layout select 4
+#bindkey '^A,5' layout select 5
+#bindkey '^A,6' layout select 6
+#bindkey '^A,7' layout select 7
+#bindkey '^A,8' layout select 8
+#bindkey '^A,9' layout select 9
 
 
 # ctrlA then right-arrow-key jumps active cursor one pane to the right:
