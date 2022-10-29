@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "setup begin"
-home=`cd ~ && pwd`
+home=`cd ../ && pwd`
 
 set -x
 
@@ -78,7 +78,7 @@ if [ -e "${home}/.vim/bundle/Vundle.vim" ]; then
   echo "seems vundle is already installed"
 else
   echo "vundle not installed yet, will install it first"
-  git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+  git clone https://github.com/VundleVim/Vundle.vim.git "${home}/.vim/bundle/Vundle.vim"
 fi
 
 
@@ -125,7 +125,10 @@ function linkFrmDot {
   fi
 
   fileInDotFile="${dotDir}/$1"
-  ln -sv ${fileInDotFile} ${fileInHome}
+
+# ln -sv ${fileInDotFile} ${fileInHome}
+  cp -fRpv ${fileInDotFile} ${fileInHome}
+
 # if [ -d ${fileInDotFile} ]; then
 #   echo "${fileInDotFile} is folder"
 #   if [[ ${currentOS} == "windows" ]]; then
@@ -143,7 +146,7 @@ function linkFrmDot {
 
 function setup {
   echo "script folder creating..."
-  mkdir ~/script ;
+  mkdir ${home}/script ;
   echo "script folder created"
 
   item2link=(
@@ -186,6 +189,18 @@ function exitIfError {
   fi
 }
 # echo "Setup vim-sensible plugin start..."
-# cd ~/.vim/bundle && \
+# cd ${home}/.vim/bundle && \
 #   git clone https://github.com/tpope/vim-sensible.git
 # echo "Setup vim-sensible plugin end."
+
+
+
+
+
+# cygwin usage
+# ln -s /cygdrive/c /c
+# ln -s /cygdrive/d /d
+# ln -s /cygdrive/e /e
+# mv -fv /home/chen.tian /home/chen.tian_
+# ln -s /c/Users/chen.tian/ /home/chen.tian
+# ln -s /c/Users/chen.tian/ /home/tiantc
