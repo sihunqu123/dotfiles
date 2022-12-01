@@ -176,6 +176,21 @@ Plugin 'jlanzarotta/bufexplorer'
 " base Plugin consumed by xolox/vim-session
 Plugin 'xolox/vim-misc'
 
+" show outline for xml/java/js/...
+Plugin 'Shougo/unite-outline'
+
+" doesn't work {
+"Plugin 'preservim/tagbar'
+"
+"Plugin 'xolox/vim-shell'
+"
+"Plugin 'xolox/vim-easytags'
+"
+"Plugin 'vimoutliner/vimoutliner'
+"
+"Plugin 'yegappan/taglist'
+"}
+
 " Plugin for vim session
 Plugin 'xolox/vim-session'
 
@@ -321,6 +336,13 @@ colorscheme molokai
 " for centos7
 " colo desert
 
+
+" If the ctags executable is not installed in one of the directories in your $PATH environment variable you have to set the g:tagbar_ctags_bin variable, see the documentation for more info.
+let g:tagbar_ctags_bin = "/c/sbin/ctags58/ctags.exe"
+
+" yegappan/taglist setting
+"let g:Tlist_Inc_Winwidth=0
+"set Tlist_Inc_Winwidth=0
 
 """""""""""""""""""""""""""""" Trailing space{
 highlight ExtraWhitespace ctermbg=red guibg=red
@@ -661,10 +683,14 @@ let s:palette.tabline.tabsel = s:palette_from.tabline.tabsel
 let s:palette.tabline.left = s:palette_from.tabline.left
 let s:palette.tabline.middle = s:palette_from.tabline.middle
 let s:palette.tabline.right = s:palette_from.tabline.right
+" the tabline may be broken after ,i ?
+"call lightline#highlight('tabline')
 
 
-"This plugin has own colorscheme for tab colors. If you want to use the default tabline, disable the tabline of this plugin:     'enable': { 'tabline': 0 },
-"  \ 'enable': { 'tabline': 0 },
+"This plugin has own colorscheme for tab colors. If you want to use the default tabline, disable the tabline of this plugin:
+"let g:lightline.enable = {
+"   \ 'tabline': 0
+"   \ }
 " refer: https://github.com/itchyny/lightline.vim/issues/589
 
 " disable showmode since we already have plugin:  https://github.com/itchyny/lightline.vim
