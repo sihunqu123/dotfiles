@@ -1,3 +1,5 @@
+
+
 call NERDTreeAddKeyMap({
       \ 'key': 'yy1',
       \ 'callback': 'NERDTreeYankFullPath1',
@@ -85,7 +87,78 @@ function! NERDTreeYankRelativePath4()
   call NERDTreeYankRelativePath("4")
 endfunction
 
+"     \ 'scope': 'Bookmark',
 
+call NERDTreeAddKeyMap({
+      \ 'key': 'f',
+      \ 'callback': 'NERDRevealBookmarkCWD',
+      \ 'override': '1',
+      \ 'quickhelpText': 'reveal this bookmark in the tree of current root' })
+"     \ 'scope': 'Bookmark' })
+
+function! NERDSetFolderSlash()
+  if isdirectory(@z)
+    let @z=@z . '/'
+  endif
+endfunction
+
+function! NERDRevealBookmarkCWD()
+  let n = g:NERDTreeBookmark.GetSelected()
+  if n != {}
+    call setreg('z', n.path.str())
+  endif
+" call nerdtree#echo("Node full path yanked to reg:".n.path.str()."!")
+" call nerdtree#echo(n.path.str())
+  call NERDSetFolderSlash()
+  execute 'NERDTreeFind ' . @z
+endfunction
+
+call NERDTreeAddKeyMap({
+      \ 'key': 'gb',
+      \ 'callback': 'NERDAdd2Bookmark',
+      \ 'override': '1',
+      \ 'quickhelpText': 'Add the current node to bookmark' })
+"     \ 'scope': 'Bookmark' })
+
+function! NERDAdd2Bookmark()
+  call feedkeys(':Bookmark ', 'n')
+endfunction
+
+call NERDTreeAddKeyMap({
+      \ 'key': 'gr',
+      \ 'callback': 'NERDRevealInputBookmark',
+      \ 'override': '1',
+      \ 'quickhelpText': 'Reveal the current node from the tree' })
+"     \ 'scope': 'Bookmark' })
+
+function! NERDRevealInputBookmark()
+  call feedkeys(':RevealBookmark ', 'n')
+endfunction
+
+
+call NERDTreeAddKeyMap({
+      \ 'key': 'ge',
+      \ 'callback': 'NERDEditB',
+      \ 'override': '1',
+      \ 'quickhelpText': 'Edit bookmark' })
+"     \ 'scope': 'Bookmark' })
+
+function! NERDEditB()
+  execute 'EditBookmarks'
+endfunction
+
+call NERDTreeAddKeyMap({
+      \ 'scope': 'Bookmark',
+      \ 'key': 'gu',
+      \ 'callback': 'NERDReadB',
+      \ 'override': '1',
+      \ 'quickhelpText': 'Refresh bookmark' })
+
+function! NERDReadB()
+  call nerdtree#echo("NERDReadB")
+  execute 'ReadBookmarks'
+  call nerdtree#echo("NERDReadB done")
+endfunction
 
 "call NERDTreeAddKeyMap({
 "      \ 'key': 'yy',
