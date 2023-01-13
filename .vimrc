@@ -94,7 +94,9 @@ Plugin 'scrooloose/nerdtree'
 " dd  Delete selected files from disk. If open in Vim, they remain open.
 " m Move the selected files to another directory. If open in Vim, the buffer will points to its old location.
 " c Copy selected files to another directory.
-Plugin 'PhilRunninger/nerdtree-visual-selection'
+"Plugin 'PhilRunninger/nerdtree-visual-selection'
+" use mine, since I added the mutiple-rename-preparation function
+Plugin 'sihunqu123/nerdtree-visual-selection'
 
 " Plugin for showing file git status in nerdtree
 Plugin 'Xuyuanp/nerdtree-git-plugin'
@@ -192,7 +194,7 @@ Plugin 'Shougo/unite-outline'
 "}
 
 " Plugin for vim session
-Plugin 'xolox/vim-session'
+"Plugin 'xolox/vim-session'
 
 " plugin from http://vim-scripts.org/vim/scripts.html
 " Plugin 'L9'
@@ -249,7 +251,7 @@ endif
 "endif
 "}
 
-" svae the list of all bookmark in .git instead of $HOME/.NERDTreeBookmarks when it's a git directory
+" save the list of all bookmark in .git instead of $HOME/.NERDTreeBookmarks when it's a git directory
 " refer: https://stackoverflow.com/questions/16097721/showing-nerdtree-bookmark-relative-to-project-directory
 if isdirectory(expand(".git"))
   let g:NERDTreeBookmarksFile = '.git/.nerdtree-bookmarks'
@@ -265,6 +267,9 @@ set lazyredraw " to avoid scrolling problems
 " required by YouCompleteMe
 set encoding=utf-8
 set showmatch
+" force to open in unix mode by default
+set fileformats=unix
+set fileformat=unix
 set number
 "或者设置相对行号
 " set relativenumber
