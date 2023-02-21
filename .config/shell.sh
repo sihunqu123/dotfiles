@@ -2,6 +2,7 @@
 source ~/.dotfiles/utils/commonUtil.sh
 
 isMacOS_b=$(isMacOS)
+isLinux_b=$(isLinux)
 
 export CLICOLOR=1
 
@@ -43,6 +44,12 @@ export KUBE_EDITOR="vim"
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 # for helm
 export HELM_HOST=:44134
+
+if [[ "${isLinux_b}" == "true" ]]; then
+  export ANT_HOME=/usr/local/ant
+  PATH=${PATH}:${ANT_HOME}/bin
+fi
+
 
 # User specific environment and startup programs
 echo "in ~/.dotfiles/.config/shell.sh"

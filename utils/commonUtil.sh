@@ -6,6 +6,12 @@ function isMacOS {
   [[ ! -z "${ret}" ]] && echo "true" || echo "false"
 }
 
+function isLinux {
+  ret=$(uname |egrep "Linux")
+#   echo "ret:${ret}"
+  [[ ! -z "${ret}" ]] && echo "true" || echo "false"
+}
+
 
 function exitIfError {
   if (($1==0)); then
