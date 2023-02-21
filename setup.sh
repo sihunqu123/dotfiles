@@ -126,8 +126,8 @@ function linkFrmDot {
 
   fileInDotFile="${dotDir}/$1"
 
-# ln -sv ${fileInDotFile} ${fileInHome}
-  cp -fRpv ${fileInDotFile} ${fileInHome}
+  ln -sv ${fileInDotFile} ${fileInHome}
+# cp -fRpv ${fileInDotFile} ${fileInHome}
 
 # if [ -d ${fileInDotFile} ]; then
 #   echo "${fileInDotFile} is folder"
@@ -153,7 +153,7 @@ function setup {
     '.gitconfig' '.screenrc' '.bashrc' '.npmrc' '.vimrc' '.bash_profile'
     '.zshrc' '.vim/plugin/highlights.csv' '.vim/plugin/highlights.vim'
     '.vim/colors/molokai.vim' '.vim/colors/SolarizedDark.vim' '.vim/tiantccs.vim'
-    'script'
+    '.ssh/config' 'script'
   )
 
   length=${#item2link[@]}
