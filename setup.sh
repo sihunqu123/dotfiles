@@ -153,6 +153,7 @@ function setup {
     '.gitconfig' '.screenrc' '.bashrc' '.npmrc' '.vimrc' '.bash_profile'
     '.zshrc' '.vim/plugin/highlights.csv' '.vim/plugin/highlights.vim'
     '.vim/colors/molokai.vim' '.vim/colors/SolarizedDark.vim' '.vim/tiantccs.vim'
+    '.config/nvim'
     '.ssh/config' 'script'
   )
 
@@ -163,6 +164,7 @@ function setup {
     echo "item: ${item} i: ${i}"
     linkFrmDot "${item}"
   done
+
 }
 
 # call setup
@@ -171,6 +173,15 @@ exitStatus=$?
 exitIfError exitStatus
 
 vim +PluginInstall +qall
+
+#
+# install packer.nvim for unix and linux
+# TODO: do in another way for windos refer: https://github.com/wbthomason/packer.nvim
+git clone --depth 1 https://github.com/wbthomason/packer.nvim\
+ ~/.local/share/nvim/site/pack/packer/start/packer.nvim
+nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
+
+
 
 # Should be executed after `PluginInstall`, otherwise nerdtree won't be installed.
 linkFrmDot '.vim/bundle/nerdtree/nerdtree_plugin/myMapping.vim'

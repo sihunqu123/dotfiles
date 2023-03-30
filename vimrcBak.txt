@@ -7,16 +7,24 @@
 
 set nocompatible              " be iMproved, required
 set statusline+=%F
-filetype off                  " required
+"filetype off                  " required
 
-" set the runtime path to include Vundle and initialize
-set rtp+=~/.vim/bundle/Vundle.vim
-call vundle#begin()
-" alternatively, pass a path where Vundle should install plugins
-"call vundle#begin('~/some/path/here')
+let data_dir = has('nvim') ? stdpath('data') . '/site' : '~/.vim'
+if empty(glob(data_dir . '/autoload/plug.vim'))
+  silent execute '!curl -fLo '.data_dir.'/autoload/plug.vim --create-dirs  https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
+
+"" set the runtime path to include Vundle and initialize
+"set rtp+=~/.vim/bundle/Vundle.vim
+"call vundle#begin()
+"" alternatively, pass a path where Vundle should install plugins
+""call vundle#begin('~/some/path/here')
+
+call plug#begin('~/.vim/bundle')
 
 " let Vundle manage Vundle, required
-Plugin 'VundleVim/Vundle.vim'
+Plug 'VundleVim/Vundle.vim'
 
 " The following are examples of different formats supported.
 " Keep Plugin commands between vundle#begin/end.
@@ -24,7 +32,7 @@ Plugin 'VundleVim/Vundle.vim'
 
 " Plugin for reopen lastest closed tab
 " usage: Ctrl+W u
-Plugin 'AndrewRadev/undoquit.vim'
+Plug 'AndrewRadev/undoquit.vim'
 
 " Plugin for fuzzy file search
 " Way to build: {
@@ -32,17 +40,17 @@ Plugin 'AndrewRadev/undoquit.vim'
 "   ruby extconf.rb && \
 "   make
 " }
-Plugin 'wincent/command-t'
+Plug 'wincent/command-t'
 
 " Plugin for merge all windows of a tab into current tab
 " usage: Tabmerge 3 right
 " to merge all buffers in tab 3 into current tab
-Plugin 'vim-scripts/Tabmerge'
+Plug 'vim-scripts/Tabmerge'
 
 " Plugin for resolving conflicts during three-way merges.
 " usage: Tabmerge 3 right
 " for more info: :help splice
-Plugin 'sjl/splice.vim'
+Plug 'sjl/splice.vim'
 
 " Plugin for showing marks
 " usage:
@@ -74,18 +82,18 @@ Plugin 'sjl/splice.vim'
 "  m<BS>        Remove all markers
 " :SignatureToggle
 " :SignatureRefresh
-Plugin 'kshenoy/vim-signature'
+Plug 'kshenoy/vim-signature'
 
 " show relative line number
 " usage:
 "  :RltvNmbr  相対行数表示を有効にする。
 "  :RltvNmbr!  相対行数表示を無効にする。
 "  :RN 相対行数表示の有効、無効を切り替える。
-Plugin 'vim-scripts/RltvNmbr.vim'
+Plug 'vim-scripts/RltvNmbr.vim'
 
 
 " Plugin for file tree
-Plugin 'scrooloose/nerdtree'
+Plug 'scrooloose/nerdtree'
 
 " Plugin for multiple-nodes operations in nerdtree
 " PS: Only work with vim opened via `vim {filename}`
@@ -94,46 +102,48 @@ Plugin 'scrooloose/nerdtree'
 " dd  Delete selected files from disk. If open in Vim, they remain open.
 " m Move the selected files to another directory. If open in Vim, the buffer will points to its old location.
 " c Copy selected files to another directory.
-"Plugin 'PhilRunninger/nerdtree-visual-selection'
-" use mine, since I added the mutiple-rename-preparation function
-Plugin 'sihunqu123/nerdtree-visual-selection'
+Plug 'PhilRunninger/nerdtree-visual-selection'
 
 " Plugin for showing file git status in nerdtree
 "Plugin 'Xuyuanp/nerdtree-git-plugin'
 
 " Plugin for execute file with system default app
-Plugin 'ivalkeen/nerdtree-execute'
+Plug 'ivalkeen/nerdtree-execute'
+
+" Plugin for execute file with system default app
+Plug 'simrat39/symbols-outline.nvim'
+
 
 " Plugin for Navigate throw quickfixlist
-Plugin 'tpope/vim-unimpaired'
+Plug 'tpope/vim-unimpaired'
 
 " Plugin for directory diff
-Plugin 'will133/vim-dirdiff'
+Plug 'will133/vim-dirdiff'
 
 " Plugin for 'Start searching before pressing enter.' and so on.
-Plugin 'tpope/vim-sensible'
+Plug 'tpope/vim-sensible'
 
 " Plugin for displaying colorful file that can be viewed via cat/less.
 " Usage: To toggle the ANSIColor, :AnsiEsc
 " Note: This will only works on the current active window. Which means the
 "   other windows(can be switched via `Ctlr+w w`) and other tabs are still unchanged.
-Plugin 'powerman/vim-plugin-AnsiEsc'
+Plug 'powerman/vim-plugin-AnsiEsc'
 
-Plugin 'mhinz/vim-grepper'
+Plug 'mhinz/vim-grepper'
 
 " Install vim-maktaba plugin for plugin developers - used in foldcol
-Plugin 'google/vim-maktaba'
+Plug 'google/vim-maktaba'
 " Install foldcol - folding columns using <ctrl-v> visual mark, then :VFoldCol
 " ctrl + v to select, then :VFoldCol to fold, and :VFoldClear to unfold all.
 " refer:
 " https://itectec.com/unixlinux/vim-hide-first-n-letters-of-all-lines-in-a-file/
-Plugin 'sihunqu123/foldcol'
+Plug 'sihunqu123/foldcol'
 
 " Plugin for compelte-prompt-list
-"Plugin 'Valloric/YouCompleteMe'
+"Plug 'Valloric/YouCompleteMe'
 
 " Plugin for statueline:  https://github.com/itchyny/lightline.vim
-Plugin 'itchyny/lightline.vim'
+Plug 'itchyny/lightline.vim'
 
 " Plugin to Adds file type icons to Vim plugins such as: NERDTree, vim-airline, CtrlP, unite, Denite, lightline, vim-startify and many more
 "   to make this plugin works, pls download `Inconsolata Nerd Font Monoa` from
@@ -141,26 +151,26 @@ Plugin 'itchyny/lightline.vim'
 "     or `DejaVu Sans Mono Nerd Font Complete Mono.ttf` is better
 "     https://github.com/ryanoasis/nerd-fonts/tree/master/patched-fonts/DejaVuSansMono/Regular/complete
 "   and put add it to your font. e.g. for windows, copy it into `C:\Windows\Fonts`
-Plugin 'ryanoasis/vim-devicons'
+Plug 'ryanoasis/vim-devicons'
 
 
 " :IndentLinesToggle toggles lines on and off.
 " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 " This plugin may has side-effect on the indent of nerdtree
 " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-Plugin 'Yggdroot/indentLine'
+Plug 'Yggdroot/indentLine'
 
 " open zip file in zip
-Plugin 'lbrayner/vim-rzip'
+Plug 'lbrayner/vim-rzip'
 
 
 " show colorful json grammar
-"Plugin 'elzr/vim-json'
+"Plug 'elzr/vim-json'
 
 " Plugin for javascript and typescript(tsx).
-Plugin 'pangloss/vim-javascript'
-Plugin 'maxmellon/vim-jsx-pretty'
-Plugin 'leafgarland/typescript-vim'
+Plug 'pangloss/vim-javascript'
+Plug 'maxmellon/vim-jsx-pretty'
+Plug 'leafgarland/typescript-vim'
 
 " Plugin for buffer explorer
 " usage:
@@ -169,41 +179,42 @@ Plugin 'leafgarland/typescript-vim'
 "   \<Leader\>bs force horizontal split open
 "   \<Leader\>bv force vertical split open
 " other usage could be found via pressing F1 in bufexplorer window
-Plugin 'jlanzarotta/bufexplorer'
+Plug 'jlanzarotta/bufexplorer'
 
 " Plugin for mini buffer explorer
 " to show all buffers in one line in the bottom of tab 1
-"Plugin 'fholgado/minibufexpl.vim'
+"Plug 'fholgado/minibufexpl.vim'
 
 " base Plugin consumed by xolox/vim-session
-Plugin 'xolox/vim-misc'
+Plug 'xolox/vim-misc'
 
 " show outline for xml/java/js/...
-Plugin 'Shougo/unite-outline'
+"Plug 'Shougo/unite-outline'
 
 " doesn't work {
-"Plugin 'preservim/tagbar'
+"Plug 'preservim/tagbar'
 "
-"Plugin 'xolox/vim-shell'
+"Plug 'xolox/vim-shell'
 "
 "Plugin 'xolox/vim-easytags'
 "
-"Plugin 'vimoutliner/vimoutliner'
+"Plug 'vimoutliner/vimoutliner'
 "
-"Plugin 'yegappan/taglist'
+"Plug 'yegappan/taglist'
 "}
 
 " Plugin for vim session
-"Plugin 'xolox/vim-session'
+Plug 'xolox/vim-session'
 
 " plugin from http://vim-scripts.org/vim/scripts.html
 " Plugin 'L9'
 " Git plugin not hosted on GitHub
-" Plugin 'git://git.wincent.com/command-t.git'
+" Plug 'git://git.wincent.com/command-t.git'
 
-" All of your Plugins must be added before the following line
-call vundle#end()            " required
-filetype plugin indent on    " required
+"" All of your Plugins must be added before the following line
+"call vundle#end()            " required
+"filetype plugin indent on    " required
+call plug#end()
 " To ignore plugin indent changes, instead use:
 "filetype plugin on
 "
@@ -251,14 +262,14 @@ endif
 "endif
 "}
 
-" save the list of all bookmark in .git instead of $HOME/.NERDTreeBookmarks when it's a git directory
+" svae the list of all bookmark in .git instead of $HOME/.NERDTreeBookmarks when it's a git directory
 " refer: https://stackoverflow.com/questions/16097721/showing-nerdtree-bookmark-relative-to-project-directory
 if isdirectory(expand(".git"))
   let g:NERDTreeBookmarksFile = '.git/.nerdtree-bookmarks'
 endif
 
 
-syntax on
+"syntax on
 set synmaxcol=250 " Syntax coloring lines that are too long just slows down the world
 set ttyfast " u got a fast terminal
 if !has('nvim')
@@ -269,9 +280,6 @@ set lazyredraw " to avoid scrolling problems
 " required by YouCompleteMe
 set encoding=utf-8
 set showmatch
-" force to open in unix mode by default
-set fileformats=unix
-set fileformat=unix
 set number
 "或者设置相对行号
 " set relativenumber
@@ -639,17 +647,7 @@ let g:aaa="value of aaa"
 " required by vim-devicons{
 " for windows client
 "set guifont=Inconsolata_Nerd_Font_Mono:h11
-"set guifont=DroidSansMono_Nerd_Font:h11
-if has("gui_running")
-    if g:os == "Darwin"
-        " do thing for macOS
-        set guifont=DroidSansMono_Nerd_Font:h11
-    elseif g:os == "Linux"
-        set guifont=DroidSansMono_Nerd_Font:h11
-    elseif g:os == "Windows"
-        set guifont=DroidSansMono_Nerd_Font:h11
-    endif
-endif
+set guifont=DroidSansMono_Nerd_Font:h11
 " for linux client
 "set guifont=Inconsolata_Nerd_Font_Mono\ 11
 let g:webdevicons_enable_nerdtree = 1
@@ -816,14 +814,14 @@ autocmd ColorScheme * highlight NonText ctermbg=None
 """""""""""""""""""""""""""""""
 if !has('nvim')
   set noek
-  function Mode()
-    set ek
-  endfunction
-
-  au InsertEnter * call Mode()
-  au InsertChange * call Mode()
-  au InsertLeave * call Mode()
 endif
+function Mode()
+  set ek
+endfunction
+
+au InsertEnter * call Mode()
+au InsertChange * call Mode()
+au InsertLeave * call Mode()
 
 
 

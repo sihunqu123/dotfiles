@@ -109,7 +109,7 @@ source $ZSH/oh-my-zsh.sh
 export TERM=xterm-256color
 
 # source .config/git_ssh.sh
-source ~/.dotfiles/.config/shell.sh
+source ~/.dotfiles/shell.sh
 
 # keep behavior the same as bash
 # this is only needed for zsh

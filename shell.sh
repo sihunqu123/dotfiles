@@ -27,8 +27,7 @@ else
   alias gls='ls -AlpkFih --color=always'
 fi
 
-alias sls='screen -ls'
-alias vi='vim'
+source ~/.dotfiles/.bash_aliases
 
 # Uncomment the following line if you don't like systemctl's auto-paging feature:
 # export SYSTEMD_PAGER=
@@ -52,7 +51,7 @@ fi
 
 
 # User specific environment and startup programs
-echo "in ~/.dotfiles/.config/shell.sh"
+echo "in ~/.dotfiles/shell.sh"
 # PATH=$PATH:$HOME/.local/bin:$HOME/bin
 #PATH=$PATH:$HOME/.local/bin:$HOME/bin
 #PATH=$HOME/bin:$HOME/.local/bin:$PATH
