@@ -7,7 +7,7 @@ call NERDTreeAddKeyMap({
 
 call NERDTreeAddKeyMap({
       \ 'key': 'yy2',
-      \ 'callback': 'NERDTreeYankFullPath3',
+      \ 'callback': 'NERDTreeYankFullPath2',
       \ 'quickhelpText': 'put full path of current node into the register 2' })
 
 call NERDTreeAddKeyMap({
@@ -148,16 +148,15 @@ function! NERDEditB()
 endfunction
 
 call NERDTreeAddKeyMap({
-      \ 'scope': 'Bookmark',
       \ 'key': 'gu',
       \ 'callback': 'NERDReadB',
       \ 'override': '1',
       \ 'quickhelpText': 'Refresh bookmark' })
 
 function! NERDReadB()
-  call nerdtree#echo("NERDReadB")
+" call nerdtree#echo("NERDReadB")
   execute 'ReadBookmarks'
-  call nerdtree#echo("NERDReadB done")
+  call nerdtree#echo("ReadBookmarks done")
 endfunction
 
 "call NERDTreeAddKeyMap({

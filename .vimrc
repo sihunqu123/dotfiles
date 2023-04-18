@@ -39,6 +39,11 @@ Plugin 'wincent/command-t'
 " to merge all buffers in tab 3 into current tab
 Plugin 'vim-scripts/Tabmerge'
 
+
+
+" Plugin to toggle curent windows's both vertical/horizontal size.
+Plugin 'szw/vim-maximizer'
+
 " Plugin for resolving conflicts during three-way merges.
 " usage: Tabmerge 3 right
 " for more info: :help splice
@@ -108,6 +113,7 @@ Plugin 'ivalkeen/nerdtree-execute'
 Plugin 'tpope/vim-unimpaired'
 
 " Plugin for directory diff
+" :DirDiff <dir1> <dir2>
 Plugin 'will133/vim-dirdiff'
 
 " Plugin for 'Start searching before pressing enter.' and so on.
@@ -954,6 +960,14 @@ nnoremap <silent> <F12> :bn<CR>
 nnoremap <silent> <S-F12> :bp<CR>
 "}
 
+" toggle maximize current split window {
+" requires Plugin 'szw/vim-maximizer'
+" refer: https://vim.fandom.com/wiki/Maximize_window_and_return_to_previous_split_structure
+nnoremap <silent><C-W>m  :MaximizerToggle<CR>
+nnoremap <silent><C-W><C-m>  :MaximizerToggle<CR>
+" }
+
+
 
 " After this, you will see the list of jumps and be asked to select a jump. {
 " If you type 4 and press Enter, it will take you back to the 4th jump.
@@ -1007,6 +1021,10 @@ noremap <leader>p "0p
 " format the whole file
 ":%!python -m json.tool
 
+
+
+" f, gb, gr, ge, gu
+" refer: .vim/bundle/nerdtree/nerdtree_plugin/myMapping.vim
 
 "function! MergeTab()
 "    let bufnums = tabpagebuflist()
