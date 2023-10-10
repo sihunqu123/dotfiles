@@ -230,6 +230,7 @@ bind b focus bottom
 #bind ' ' dinfo
 
 bind ' ' layout show
+bindkey '^A, ' layout show
 #bind 0 layout select 0
 #bind 1 layout select 1
 #bind 2 layout select 2

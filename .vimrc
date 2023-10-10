@@ -67,7 +67,7 @@ Plugin 'sjl/splice.vim'
 "  ']           Jump by alphabetical order to start of next line having a mark
 "  '[           Jump by alphabetical order to start of prev line having a mark
 "  m/           Open location list and display marks from current buffer. this
-"                 list might be all blank when quickfix list used(]q, [q);
+"                 list might be all blank when quickfix list used(]q, [q);      **********************
 "
 "  m[0-9]       Toggle the corresponding marker !@#$%^&*()
 "  m<S-[0-9]>   Remove all markers of the same type (S -> shift)
@@ -169,12 +169,36 @@ Plugin 'maxmellon/vim-jsx-pretty'
 Plugin 'leafgarland/typescript-vim'
 
 " Plugin for buffer explorer
-" usage:
+" usage of opening it:
 "   \<Leader\>be normal open
 "   \<Leader\>bt toggle open / close
 "   \<Leader\>bs force horizontal split open
 "   \<Leader\>bv force vertical split open
 " other usage could be found via pressing F1 in bufexplorer window
+" usage inside the bufexplorer
+" Buffer Explorer (7.4.25)
+" --------------------------
+" <F1> : toggle this help
+" <enter> or o or Mouse-Double-Click : open buffer under cursor
+" <shift-enter> or t : open buffer in another tab
+" a : toggle find active buffer
+" b : Fast buffer switching with b<any bufnum>
+" B : toggle if to save/use recent tab or not
+" d : delete buffer
+" D : wipe buffer
+" F : open buffer in another window above the current
+" f : open buffer in another window below the current
+" p : toggle splitting of file and path name
+" q : quit
+" r : reverse sort
+" R : toggle showing relative or full paths
+" s : cycle thru "sort by" fields ['number', 'name', 'fullpath', 'mru', 'extension']
+" S : reverse cycle thru "sort by" fields
+" T : toggle if to show only buffers for this tab or not
+" u : toggle showing unlisted buffers
+" V : open buffer in another window on the left of the current
+" v : open buffer in another window on the right of the current
+" Sorted by mru | Locate buffer | One tab/buffer | Relative Split path
 Plugin 'jlanzarotta/bufexplorer'
 
 " Plugin for mini buffer explorer
@@ -362,6 +386,12 @@ match ExtraWhitespace /\s\+$/
 " to remove trailing space
 nmap <Leader>c :%s/\s\+$//g
 "}
+
+"""""""""""""""""""""""""""""" format file{
+map <Leader>fj :!python -m json.tool
+map <Leader>fx :!xmllint --format -
+"}
+
 
 " Status Line {
 " set laststatus=2                             " always show statusbar
@@ -1021,10 +1051,27 @@ noremap <leader>p "0p
 " format the whole file
 ":%!python -m json.tool
 
+" vim format xml Memo {
+" :%!xmllint --format -
+" :'<,'>!xmllint --format -
+" refer: https://gist.github.com/jlacar/00a07453ec4344cf0194
+" }
 
 
 " f, gb, gr, ge, gu
 " refer: .vim/bundle/nerdtree/nerdtree_plugin/myMapping.vim
+
+" copy the filenmae/path of current file {
+" let @a = expand("%")<cr>
+" a -> lib/siskin2/designAdapter.js
+" let @a = expand("%:p")<cr>
+" a -> /e/github/phx/phoenix-core/konywebstudio/lib/siskin2/designAdapter.js
+" let @a = expand("%:t")<cr>
+" designAdapter.js
+" let @a = expand("%:p:h")<cr>
+" /e/github/phx/phoenix-core/konywebstudio/lib/siskin2
+" refer: https://stackoverflow.com/questions/916875/yank-file-name-path-of-current-buffer-in-vim
+" }
 
 "function! MergeTab()
 "    let bufnums = tabpagebuflist()

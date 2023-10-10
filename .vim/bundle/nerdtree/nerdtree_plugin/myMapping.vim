@@ -87,6 +87,47 @@ function! NERDTreeYankRelativePath4()
   call NERDTreeYankRelativePath("4")
 endfunction
 
+call NERDTreeAddKeyMap({
+      \ 'key': 'yf1',
+      \ 'callback': 'NERDTreeYankFilename1',
+      \ 'quickhelpText': 'put filename of current node into the register 1' })
+call NERDTreeAddKeyMap({
+      \ 'key': 'yf2',
+      \ 'callback': 'NERDTreeYankFilename2',
+      \ 'quickhelpText': 'put filename of current node into the register 2' })
+call NERDTreeAddKeyMap({
+      \ 'key': 'yf3',
+      \ 'callback': 'NERDTreeYankFilename3',
+      \ 'quickhelpText': 'put filename of current node into the register 3' })
+call NERDTreeAddKeyMap({
+      \ 'key': 'yf4',
+      \ 'callback': 'NERDTreeYankFilename4',
+      \ 'quickhelpText': 'put filename of current node into the register 4' })
+
+function! NERDTreeYankFilename(param1)
+  let n = g:NERDTreeFileNode.GetSelected()
+  if n != {}
+    call setreg(a:param1, fnamemodify(n.path.str(), ':t'))
+  endif
+  call nerdtree#echo("Node filename yanked to reg:".a:param1."!")
+endfunction
+
+function! NERDTreeYankFilename1()
+  call NERDTreeYankFilename("1")
+endfunction
+
+function! NERDTreeYankFilename2()
+  call NERDTreeYankFilename("2")
+endfunction
+
+function! NERDTreeYankFilename3()
+  call NERDTreeYankFilename("3")
+endfunction
+
+function! NERDTreeYankFilename4()
+  call NERDTreeYankFilename("4")
+endfunction
+
 "     \ 'scope': 'Bookmark',
 
 call NERDTreeAddKeyMap({
